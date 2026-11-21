@@ -1,0 +1,132 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.25.x'
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Format
+        shell: bash
+        run: |
+          files=$(gofmt -l *.go handler websocket resource localcert cmd)
+          if [ -n "$files" ]; then
+            echo "$files"
+            exit 1
+          fi
+      - run: go vet ./...
+      - run: go test ./...
+      - name: Race detector
+        if: runner.os == 'Linux'
+        run: go test -race ./...
+      - run: node --check static/js/serial-data.js
+      - run: node --check static/js/i18n.js
+      - run: node --check static/js/serial-tools.js
+      - run: node --check static/js/local.js
+      - run: node --check static/js/remote.js
+      - run: node --check static/js/network-reference.js
+      - run: node --check static/js/esp32-manifest.js
+      - run: node --check static/js/remote-serial-port.js
+      - run: node --check static/js/esp32-flasher.js
+      - run: node --check static/vendor/esptool-js-0.7.0.js
+      - run: node --check scripts/smoke-release.cjs
+      - run: node --check scripts/smoke-standalone.cjs
+      - run: node --check scripts/smoke-p2p.cjs
+      - run: node --check static/js/p2p-probe-link.js
+      - run: node --check static/js/p2p-network.js
+      - run: node --check static/js/p2p-probe.js
+      - run: node --check static/js/serial-p2p.js
+      - run: node --check scripts/smoke-serial-p2p.cjs
+      - run: node --check scripts/smoke-serial-tools.cjs
+      - run: node --check scripts/smoke-network-reference.cjs
+      - run: node --check scripts/smoke-p2p-failure.cjs
+      - run: node --check scripts/browser-test-client.cjs
+      - run: node --test tests/serial-data.test.cjs tests/browser.test.cjs tests/access.test.cjs tests/network-reference.test.cjs tests/p2p-network.test.cjs tests/esp32-manifest.test.cjs tests/remote-serial-port.test.cjs tests/p2p-probe.test.cjs tests/serial-p2p.test.cjs tests/serial-tools.test.cjs tests/i18n.test.cjs tests/mutation-runner.test.cjs
+      - run: go build -o .local/shareserial .
+      - name: Build the Windows executable directly
+        if: runner.os == 'Windows'
+        run: go build -o .local/direct/ShareSerial.exe .
+      - name: Deploy the plain go build output
+        if: runner.os == 'Windows'
+        run: node scripts/smoke-standalone.cjs .local/direct/ShareSerial.exe
+      - name: Package the native distribution
+        run: go run ./cmd/package -targets native -out .local/release-smoke
+      - name: Run the extracted distribution without developer tools
+        run: node -e "const fs=require('node:fs'),p=require('node:path'),cp=require('node:child_process');const v=fs.readFileSync('VERSION','utf8').trim();const r=cp.spawnSync(process.execPath,['scripts/smoke-release.cjs',p.join('.local/release-smoke',v)],{stdio:'inherit'});process.exit(r.status??1)"
+      - name: Native browser P2P experiment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          go build -o .local/p2p-ci-server.exe .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go run ./cmd/devcert -out .local/p2p-ci-certs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+          try {
+            node scripts/smoke-p2p.cjs https://127.0.0.1:12559 .local/p2p-ci-report.json
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            node scripts/smoke-serial-p2p.cjs https://127.0.0.1:12559 .local/serial-p2p-ci-report.json --screenshots
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            node scripts/smoke-serial-tools.cjs https://127.0.0.1:12559 .local/serial-tools-ci-report.json --screenshots
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            # Give this independent smoke test a fresh HTTP sampling budget.
+            if (!$server.HasExited) { Stop-Process -Id $server.Id; $server.WaitForExit() }
+            $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+            node scripts/smoke-network-reference.cjs https://127.0.0.1:12559 .local/network-reference-ci-report.json --screenshots
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if (!$server.HasExited) { Stop-Process -Id $server.Id; $server.WaitForExit() }
+            $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+            node scripts/smoke-p2p-failure.cjs https://127.0.0.1:12559 .local/p2p-failure-ci-report.json
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          } finally {
+            if (!$server.HasExited) { Stop-Process -Id $server.Id }
+          }
+
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version: '1.25.x'
+          cache-dependency-path: go.sum
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: node --test tests/mutation-runner.test.cjs
+      - run: node scripts/mutation-test.cjs --report-dir .local/mutation-ci
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-report
+          path: .local/mutation-ci/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 14

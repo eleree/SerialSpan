@@ -1,0 +1,16 @@
+.network-reference { min-width: 0; }
+.network-reference .network-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.network-reference .network-heading strong { font-size: 13px; font-weight: 600; }
+.network-reference button { font-size: 12px; min-height: 28px; padding: 4px 9px; border: 1px solid #d5dde5; border-radius: 5px; background: #f8fafc; color: #30475b; cursor: pointer; white-space: nowrap; }
+.network-reference #networkSummary { font-size: 13px; font-weight: 600; color: #276f66; margin: 11px 0 7px; }
+.network-reference #networkMetrics, .network-reference details { font-size: 11px; color: #718195; line-height: 1.65; }
+.network-reference details { margin-top: 9px; }
+.network-reference summary { cursor: pointer; padding: 0; border: 0; background: none; min-height: 0; }
+.network-reference #networkTargetLabel { display: grid; gap: 5px; margin-top: 10px; font-size: 12px; color: #63758a; }
+.network-reference #networkTarget { width: 100%; min-width: 0; font-size: 12px; }
+.network-reference details p { margin: 7px 0; }
+.network-reference-remote { position: relative; max-width: 100%; }
+.network-reference-remote #networkSummary { margin: 0; font-size: 12px; }
+.network-reference-remote > .network-body { position: absolute; top: 28px; right: 0; z-index: 5; width: 330px; max-width: calc(100vw - 64px); background: #fff; border: 1px solid #d5dde5; border-radius: 7px; box-shadow: 0 8px 24px #20304420; padding: 14px; font-size: 11px; color: #718195; line-height: 1.65; }
+.network-reference-remote #networkMetrics { margin-top: 10px; }
+@media (max-width: 760px) { .network-reference-remote { flex-basis: 100%; } .network-reference-remote > .network-body { position: static; width: auto; max-width: 100%; margin-top: 8px; } }

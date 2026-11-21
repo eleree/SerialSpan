@@ -1,0 +1,10 @@
+.local/
+/shareserial
+/shareserial.exe
+/dist/
+/coverage.out
+/*.syso
+*.pem
+*.key
+.DS_Store
+Thumbs.db

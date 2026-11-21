@@ -1,0 +1,3533 @@
+{
+  "schemaVersion": 1,
+  "mutants": [
+    {
+      "id": "go-id-length",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept Local IDs with the wrong length",
+      "edits": [
+        {
+          "find": "if len(id) != IDLength {",
+          "replace": "if false && len(id) != IDLength {"
+        }
+      ]
+    },
+    {
+      "id": "go-id-alphabet",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept forbidden Local ID characters",
+      "edits": [
+        {
+          "find": "if !strings.ContainsRune(IDAlphabet, letter) {",
+          "replace": "if false && !strings.ContainsRune(IDAlphabet, letter) {"
+        }
+      ]
+    },
+    {
+      "id": "go-id-collision",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Allow a second socket to overwrite a registered ID",
+      "edits": [
+        {
+          "find": "owner != nil && owner != client",
+          "replace": "false && owner != nil && owner != client"
+        }
+      ]
+    },
+    {
+      "id": "go-registration-count",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept multiple ports on one Local",
+      "edits": [
+        {
+          "find": "len(message.Ports) != 1",
+          "replace": "len(message.Ports) == 0"
+        }
+      ]
+    },
+    {
+      "id": "go-empty-port",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept an empty port ID",
+      "edits": [
+        {
+          "find": "message.Ports[0].PortID == \"\" || ",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "go-port-id-length",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept port IDs longer than 128 bytes",
+      "edits": [
+        {
+          "find": "len(message.Ports[0].PortID) > 128",
+          "replace": "false && len(message.Ports[0].PortID) > 128"
+        }
+      ]
+    },
+    {
+      "id": "go-port-name-length",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept names longer than 256 bytes",
+      "edits": [
+        {
+          "find": "len(message.Ports[0].Name) > 256",
+          "replace": "false && len(message.Ports[0].Name) > 256"
+        }
+      ]
+    },
+    {
+      "id": "go-local-port-check",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Allow Local data for an unregistered port",
+      "edits": [
+        {
+          "find": "client.localID == \"\" || h.ports[client.localID].PortID != message.PortID",
+          "replace": "client.localID == \"\""
+        }
+      ]
+    },
+    {
+      "id": "go-local-base64-check",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Relay malformed Local data",
+      "edits": [
+        {
+          "find": "func (h *Hub) forwardData(client *Client, message Message) {\n\tif client.localID == \"\" || h.ports[client.localID].PortID != message.PortID {\n\t\th.fail(client, \"port_not_available\", \"Port is not registered on this Local\")\n\t\treturn\n\t}\n\tif !validData(message.Data) {",
+          "replace": "func (h *Hub) forwardData(client *Client, message Message) {\n\tif client.localID == \"\" || h.ports[client.localID].PortID != message.PortID {\n\t\th.fail(client, \"port_not_available\", \"Port is not registered on this Local\")\n\t\treturn\n\t}\n\tif false && !validData(message.Data) {"
+        }
+      ]
+    },
+    {
+      "id": "go-local-identity-spoof",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Route RX using the supplied Local ID",
+      "edits": [
+        {
+          "find": "localID := client.localID\n\ttargets := make([]*Client, 0, MaxRemotesPerLocal)",
+          "replace": "localID := message.LocalID\n\ttargets := make([]*Client, 0, MaxRemotesPerLocal)"
+        }
+      ]
+    },
+    {
+      "id": "go-broadcast-first-only",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Restore the original single-Remote forwarding bug",
+      "edits": [
+        {
+          "find": "targets = append(targets, remote)",
+          "replace": "targets = append(targets, remote)\n\t\t\tbreak"
+        }
+      ]
+    },
+    {
+      "id": "go-cross-local-leak",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Broadcast to other Locals sharing the same port identifier",
+      "edits": [
+        {
+          "find": "target.localID == localID && target.portID == message.PortID",
+          "replace": "target.portID == message.PortID"
+        }
+      ]
+    },
+    {
+      "id": "go-remote-identity-spoof",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Trust supplied Remote identity on serial writes",
+      "edits": [
+        {
+          "find": "h.relay(client, []*Client{local}, Message{Type: MsgTypeSend, RemoteID: client.remoteID, PortID: target.portID, Data: message.Data, GrantID: target.grantID, WriteEpoch: local.writeEpoch})",
+          "replace": "h.relay(client, []*Client{local}, Message{Type: MsgTypeSend, RemoteID: message.RemoteID, PortID: target.portID, Data: message.Data, GrantID: target.grantID, WriteEpoch: local.writeEpoch})"
+        }
+      ]
+    },
+    {
+      "id": "go-remote-port-check",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept writes for a different port",
+      "edits": [
+        {
+          "find": "if target.portID != message.PortID {",
+          "replace": "if false && target.portID != message.PortID {"
+        }
+      ]
+    },
+    {
+      "id": "go-remote-base64-check",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Relay malformed Remote data",
+      "edits": [
+        {
+          "find": "func (h *Hub) forwardSend(client *Client, message Message) {\n\ttarget, ok := h.subscriptions[client]\n\tif !ok {\n\t\th.fail(client, \"not_connected\", \"Not connected\")\n\t\treturn\n\t}\n\tif target.access != AccessControl {\n\t\th.fail(client, \"read_only\", \"This connection has read-only access\")\n\t\treturn\n\t}\n\tif target.portID != message.PortID {\n\t\th.fail(client, \"port_not_available\", \"Port does not match the connected serial port\")\n\t\treturn\n\t}\n\tif !validData(message.Data) {",
+          "replace": "func (h *Hub) forwardSend(client *Client, message Message) {\n\ttarget, ok := h.subscriptions[client]\n\tif !ok {\n\t\th.fail(client, \"not_connected\", \"Not connected\")\n\t\treturn\n\t}\n\tif target.access != AccessControl {\n\t\th.fail(client, \"read_only\", \"This connection has read-only access\")\n\t\treturn\n\t}\n\tif target.portID != message.PortID {\n\t\th.fail(client, \"port_not_available\", \"Port does not match the connected serial port\")\n\t\treturn\n\t}\n\tif false && !validData(message.Data) {"
+        }
+      ]
+    },
+    {
+      "id": "go-premature-subscription",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Bind before validating the connect request",
+      "edits": [
+        {
+          "find": "func (h *Hub) connect(client *Client, message Message) {",
+          "replace": "func (h *Hub) connect(client *Client, message Message) {\n\th.subscriptions[client] = subscription{localID: message.LocalID, portID: message.PortID, access: AccessControl}"
+        }
+      ]
+    },
+    {
+      "id": "go-ignore-remote-config",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Silently ignore unsupported Remote configuration",
+      "edits": [
+        {
+          "find": "if len(message.Config) != 0 && string(message.Config) != \"null\" {",
+          "replace": "if false && len(message.Config) != 0 && string(message.Config) != \"null\" {"
+        }
+      ]
+    },
+    {
+      "id": "go-duplicate-connect",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Notify Local again for an identical connect",
+      "edits": [
+        {
+          "find": "if !subscribed || current.localID != target.localID || current.portID != target.portID || current.access != target.access {",
+          "replace": "if !subscribed || current.grantID == \"\" || true {"
+        }
+      ]
+    },
+    {
+      "id": "go-unshare-keeps-subscription",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Retain subscriptions after Local stops sharing",
+      "edits": [
+        {
+          "find": "delete(h.subscriptions, remote)",
+          "replace": "// mutation: retained stale subscription"
+        }
+      ]
+    },
+    {
+      "id": "go-unshare-keeps-port",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Retain stale port metadata after unshare",
+      "edits": [
+        {
+          "find": "delete(h.ports, localID)",
+          "replace": "// mutation: retained stale port"
+        }
+      ]
+    },
+    {
+      "id": "go-detach-keeps-subscription",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Retain Remote subscription after disconnect",
+      "edits": [
+        {
+          "find": "delete(h.subscriptions, client)",
+          "replace": "// mutation: retained stale Remote subscription"
+        }
+      ]
+    },
+    {
+      "id": "go-empty-data",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept an empty serial payload",
+      "edits": [
+        {
+          "find": "if strings.Trim(data, \"\\r\\n\") == \"\" || len(data) > base64.StdEncoding.EncodedLen(MaxDataSize) {",
+          "replace": "if len(data) > base64.StdEncoding.EncodedLen(MaxDataSize) {"
+        }
+      ]
+    },
+    {
+      "id": "go-base64-padding-bits",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept noncanonical Base64 padding bits",
+      "edits": [
+        {
+          "find": "base64.StdEncoding.Strict().DecodeString(data)",
+          "replace": "base64.StdEncoding.DecodeString(data)"
+        }
+      ]
+    },
+    {
+      "id": "go-decoded-size-limit",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Check encoded length only, allowing oversized decoded bytes",
+      "edits": [
+        {
+          "find": "return err == nil && len(decoded) <= MaxDataSize",
+          "replace": "return err == nil"
+        },
+        {
+          "find": "decoded, err := base64.StdEncoding.Strict().DecodeString(data)",
+          "replace": "_, err := base64.StdEncoding.Strict().DecodeString(data)"
+        }
+      ]
+    },
+    {
+      "id": "go-maximum-data-exclusive",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Reject a payload exactly at the 16 KiB limit",
+      "edits": [
+        {
+          "find": "len(decoded) <= MaxDataSize",
+          "replace": "len(decoded) < MaxDataSize"
+        }
+      ]
+    },
+    {
+      "id": "go-frame-limit",
+      "file": "websocket/hub.go",
+      "suite": "go-server",
+      "description": "Allow WebSocket frames above the documented limit",
+      "edits": [
+        {
+          "find": "c.conn.SetReadLimit(MaxMessageSize)",
+          "replace": "c.conn.SetReadLimit(2 * MaxMessageSize)"
+        }
+      ]
+    },
+    {
+      "id": "go-origin-allow-all",
+      "file": "handler/websocket.go",
+      "suite": "go-server",
+      "description": "Disable same-origin enforcement",
+      "edits": [
+        {
+          "find": "WriteBufferSize: 4096,",
+          "replace": "WriteBufferSize: 4096,\n\t\tCheckOrigin: func(*http.Request) bool { return true },"
+        },
+        {
+          "find": "import (\n",
+          "replace": "import (\n\t\"net/http\"\n"
+        }
+      ]
+    },
+    {
+      "id": "js-hex-odd-length",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Truncate the last nibble of an odd-length HEX string",
+      "edits": [
+        {
+          "find": "compact.length % 2 !== 0 || ",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "js-hex-invalid-chars",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Parse invalid HEX characters",
+      "edits": [
+        {
+          "find": " || !/^[0-9a-f]+$/i.test(compact)",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "js-cr-becomes-lf",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Append LF instead of CR",
+      "edits": [
+        {
+          "find": "result[bytes.length] = 0x0D;",
+          "replace": "result[bytes.length] = 0x0A;"
+        }
+      ]
+    },
+    {
+      "id": "js-send-limit-removed",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Remove the browser send-size limit",
+      "edits": [
+        {
+          "find": "if (bytes.length > MAX_SEND_BYTES)",
+          "replace": "if (false && bytes.length > MAX_SEND_BYTES)"
+        }
+      ]
+    },
+    {
+      "id": "js-send-limit-exclusive",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Reject exactly 16 KiB",
+      "edits": [
+        {
+          "find": "if (bytes.length > MAX_SEND_BYTES)",
+          "replace": "if (bytes.length >= MAX_SEND_BYTES)"
+        }
+      ]
+    },
+    {
+      "id": "js-base64-tx-high-bit",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Corrupt the high bit when encoding binary data",
+      "edits": [
+        {
+          "find": "String.fromCharCode(byte)",
+          "replace": "String.fromCharCode(byte & 0x7F)"
+        }
+      ]
+    },
+    {
+      "id": "js-base64-rx-high-bit",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Corrupt the high bit when decoding binary data",
+      "edits": [
+        {
+          "find": "letter => letter.charCodeAt(0)",
+          "replace": "letter => letter.charCodeAt(0) & 0x7F"
+        }
+      ]
+    },
+    {
+      "id": "js-hex-no-padding",
+      "file": "static/js/serial-data.js",
+      "suite": "frontend",
+      "description": "Render single-digit HEX without a leading zero",
+      "edits": [
+        {
+          "find": ".padStart(2, '0')",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "js-utf8-no-stream",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Decode split UTF-8 chunks independently",
+      "edits": [
+        {
+          "find": "rxDecoder.decode(bytes, { stream: true })",
+          "replace": "rxDecoder.decode(bytes, { stream: false })"
+        }
+      ]
+    },
+    {
+      "id": "js-history-unbounded",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Stop trimming retained RX/TX records",
+      "edits": [
+        {
+          "find": "records.shift();",
+          "replace": "// mutation: retain all records"
+        }
+      ]
+    },
+    {
+      "id": "js-toggle-duplicates",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Append records again while changing display mode",
+      "edits": [
+        {
+          "find": "for (const record of records) renderRecord(record);",
+          "replace": "for (const record of [...records]) addRecord(record.direction, record.bytes);"
+        }
+      ]
+    },
+    {
+      "id": "js-socket-still-connected",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Keep the serial subscription active after socket closure",
+      "edits": [
+        {
+          "find": "    isConnected = false;",
+          "replace": "    isConnected = true;"
+        }
+      ]
+    },
+    {
+      "id": "js-ignore-local-disconnect",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Keep controls active after Local closes",
+      "edits": [
+        {
+          "find": "const shouldRetry = autoReconnectWanted && autoReconnectEnabled;\n            releaseTransport();\n            setDisconnected();",
+          "replace": "const shouldRetry = false;"
+        }
+      ]
+    },
+    {
+      "id": "js-ignore-data-target",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Display RX addressed to another Local or port",
+      "edits": [
+        {
+          "find": "isConnected && message.localId === localId && message.portId === connectedPortId",
+          "replace": "isConnected"
+        }
+      ]
+    },
+    {
+      "id": "js-no-reregister",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Fail to register an already-open port after reconnect",
+      "edits": [
+        {
+          "find": "if (isOpen && shareEnabled) registerPort();",
+          "replace": "if (!isOpen && shareEnabled) registerPort();"
+        }
+      ]
+    },
+    {
+      "id": "js-stale-registration-ack",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Accept an ACK for the previous Local ID",
+      "edits": [
+        {
+          "find": "if (!isOpen || !shareEnabled || message.localId !== localId) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-close-keeps-sharing",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Do not unregister a closed physical port",
+      "edits": [
+        {
+          "find": "if (ws && ws.readyState === WebSocket.OPEN && localId) {\n        ws.send(JSON.stringify({ type: 'unregister' }));",
+          "replace": "if (ws && ws.readyState === WebSocket.OPEN && localId) {\n        // mutation: keep server registration"
+        }
+      ]
+    },
+    {
+      "id": "js-write-queue-off-by-one",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Allow a 257th pending serial write",
+      "edits": [
+        {
+          "find": "if (pendingWrites >= 256) {",
+          "replace": "if (pendingWrites > 256) {"
+        }
+      ]
+    },
+    {
+      "id": "js-forward-before-register",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Forward serial data before server registration is acknowledged",
+      "edits": [
+        {
+          "find": "if (!registered || !ws || ws.readyState !== WebSocket.OPEN || !localId) continue;",
+          "replace": "if (!ws || ws.readyState !== WebSocket.OPEN || !localId) continue;"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-default-control",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Default an omitted access mode to control",
+      "edits": [
+        {
+          "find": "access = AccessRead",
+          "replace": "access = AccessControl"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-metadata-before-approval",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Disclose metadata before approval",
+      "edits": [
+        {
+          "find": "if !approved || target.localID != message.LocalID {",
+          "replace": "if false && (!approved || target.localID != message.LocalID) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-reader-can-write",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Let a reader send serial bytes",
+      "edits": [
+        {
+          "find": "if target.access != AccessControl {",
+          "replace": "if false && target.access != AccessControl {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-wrong-owner-decision",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Accept another Local deciding a request",
+      "edits": [
+        {
+          "find": "if request.local != local || h.locals[request.target.localID] != local {",
+          "replace": "if false && (request.local != local || h.locals[request.target.localID] != local) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-expired-decision",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Approve an expired request",
+      "edits": [
+        {
+          "find": "if !h.now().Before(request.expiresAt) {\n\t\th.cancelRequest(request.remote, \"approval_timeout\", true)",
+          "replace": "if false && !h.now().Before(request.expiresAt) {\n\t\th.cancelRequest(request.remote, \"approval_timeout\", true)"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-expiry-boundary",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Keep a request alive at its exact expiry",
+      "edits": [
+        {
+          "find": "if !h.now().Before(request.expiresAt) {\n\t\t\th.cancelRequest(remote, \"approval_timeout\", true)",
+          "replace": "if h.now().After(request.expiresAt) {\n\t\t\th.cancelRequest(remote, \"approval_timeout\", true)"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-read-escalation",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Escalate a read request to control",
+      "edits": [
+        {
+          "find": "if message.Access == AccessControl && request.target.access != AccessControl {",
+          "replace": "if false && message.Access == AccessControl && request.target.access != AccessControl {"
+        }
+      ]
+    },
+    {
+      "id": "go-multiwriter-exclusive-approval",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Reintroduce exclusive control and reject a second approved writer",
+      "edits": [
+        {
+          "find": "count++\n\t}\n\tif count >= MaxRemotesPerLocal",
+          "replace": "count++\n\t\tif message.Access == AccessControl && target.access == AccessControl { h.failDecision(local, request, \"control_busy\", \"Exclusive control regression\"); return }\n\t}\n\tif count >= MaxRemotesPerLocal"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-pending-limit",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Accept a ninth pending request",
+      "edits": [
+        {
+          "find": "if count >= MaxPendingPerLocal {",
+          "replace": "if count > MaxPendingPerLocal {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-approved-limit",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Approve a seventeenth Remote",
+      "edits": [
+        {
+          "find": "if count >= MaxRemotesPerLocal {",
+          "replace": "if count > MaxRemotesPerLocal {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-wrong-owner-revoke",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Let another Local revoke a subscription",
+      "edits": [
+        {
+          "find": "if !ok || h.locals[target.localID] != local {",
+          "replace": "if !ok {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-revoke-keeps-grant",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Notify revocation but retain serial access",
+      "edits": [
+        {
+          "find": "\th.detach(remote)\n\th.send(remote, Message{Type: MsgTypePermissionRevoked",
+          "replace": "\t// mutation: retain the grant\n\th.send(remote, Message{Type: MsgTypePermissionRevoked"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-request-replay",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Retain a request ID after a decision",
+      "edits": [
+        {
+          "find": "delete(h.requests, request.id)",
+          "replace": "// mutation: retain replayable request ID"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-pending-not-cleared",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Retain the pending index after a decision",
+      "edits": [
+        {
+          "find": "delete(h.pending, request.remote)",
+          "replace": "// mutation: retain pending index"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-approve-after-owner-close",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Bind a new grant after cleanup removed Local",
+      "edits": [
+        {
+          "find": "h.detach(remote)\n\tif !h.clients[remote] || h.locals[target.localID] != local {",
+          "replace": "h.detach(remote)\n\tif false && (!h.clients[remote] || h.locals[target.localID] != local) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-request-after-owner-close",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Keep a request for a Local removed during replacement",
+      "edits": [
+        {
+          "find": "h.cancelRequest(remote, \"request_replaced\", false)\n\tif !h.clients[remote] || h.locals[target.localID] != local {",
+          "replace": "h.cancelRequest(remote, \"request_replaced\", false)\n\tif false && (!h.clients[remote] || h.locals[target.localID] != local) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-duplicate-renews",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Renew a duplicate request and its timeout",
+      "edits": [
+        {
+          "find": "if previous := h.pending[remote]; previous != nil && previous.target == target && h.now().Before(previous.expiresAt) {",
+          "replace": "if previous := h.pending[remote]; false && previous != nil && previous.target == target && h.now().Before(previous.expiresAt) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-unknown-grant-mode",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Accept an unknown grant mode",
+      "edits": [
+        {
+          "find": "if message.Access != AccessRead && message.Access != AccessControl {",
+          "replace": "if false && message.Access != AccessRead && message.Access != AccessControl {"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-reader-send",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Allow the Remote send handler to run with read-only permission",
+      "edits": [
+        {
+          "find": "if (access !== 'control')",
+          "replace": "if (false && access !== 'control')"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-stale-grant",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Accept a cancelled or mismatched approval result",
+      "edits": [
+        {
+          "find": "if (!isPending || !pendingRequestId || message.requestId !== pendingRequestId) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-revocation-ignored",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Keep Remote connected after revocation",
+      "edits": [
+        {
+          "find": "case 'permission_revoked':\n            disableRemoteReconnect();\n            releaseTransport();\n            setDisconnected();",
+          "replace": "case 'permission_revoked':"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-legacy-local-protocol",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Share with a server lacking authorization support",
+      "edits": [
+        {
+          "find": "if (message.version !== 3 || typeof message.paused !== 'boolean' || !Number.isSafeInteger(message.writeEpoch) || message.writeEpoch < 1) {",
+          "replace": "if (false || typeof message.paused !== 'boolean' || !Number.isSafeInteger(message.writeEpoch) || message.writeEpoch < 1) {"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-unconfirmed-local-grant",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Trust an unsolicited or altered server grant",
+      "edits": [
+        {
+          "find": "if (!approved || message.grantId !== message.requestId || !['read', 'control'].includes(approved.decision) || approved.remoteId !== message.remoteId || approved.portId !== message.portId || approved.decision !== message.access) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-unchecked-write-ingress",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Queue unauthorized messages before permission checking",
+      "edits": [
+        {
+          "find": "if (!canWrite(message.remoteId, message.portId, message.grantId, message.writeEpoch, message.flashSessionId)) return;",
+          "replace": "// mutation: skip incoming write authorization"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-unchecked-queued-write",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Execute a queued command after revocation",
+      "edits": [
+        {
+          "find": "if (grant && (generation !== remoteWriteGeneration || !canWrite(grant.remoteId, grant.portId, grant.grantId, grant.epoch, grant.flashSessionId))) {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-delayed-local-revoke",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Keep local write permission until a server reply",
+      "edits": [
+        {
+          "find": "    connectedRemotes.delete(remoteId);\n    updateRemoteList();",
+          "replace": "    // mutation: retain authorization until server reply\n    updateRemoteList();"
+        }
+      ]
+    },
+    {
+      "id": "js-auth-unknown-remote-grant",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Accept a grant with the wrong protocol or permission",
+      "edits": [
+        {
+          "find": "if (message.version !== 3 || !['read', 'control'].includes(message.access) || typeof message.grantId !== 'string' || !message.grantId || !Number.isSafeInteger(message.writeEpoch) || message.writeEpoch < 1 || typeof message.paused !== 'boolean') {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "go-auth-pending-metadata",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Disclose the port identifier in an unapproved response",
+      "edits": [
+        {
+          "find": "LocalID: request.target.localID, RemoteID: request.remote.remoteID,\n\t\tAccess:",
+          "replace": "LocalID: request.target.localID, RemoteID: request.remote.remoteID, PortID: request.target.portID,\n\t\tAccess:"
+        }
+      ]
+    },
+    {
+      "id": "js-local-network-dependency",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Block local sends unless remotely shared",
+      "edits": [
+        {
+          "find": "function sendLocalData() {",
+          "replace": "function sendLocalData() {\n    if (!registered) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-multiwriter-local-exclusive",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Disable Local sends whenever any Remote writer is approved",
+      "edits": [
+        {
+          "find": "if (!canLocalWrite()) { showError",
+          "replace": "if (!canLocalWrite() || [...connectedRemotes.values()].some(remote => remote.access === 'control')) { showError"
+        }
+      ]
+    },
+    {
+      "id": "js-queue-closed-port",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Execute queued writes after physical port closure has started",
+      "edits": [
+        {
+          "find": "if (!isOpen || isClosing || writer !== activeWriter) return;",
+          "replace": "if (writer !== activeWriter) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-auto-accept-off-ignored",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Approve requests when automatic acceptance is disabled",
+      "edits": [
+        {
+          "find": "if (!autoAccept || !registered) return;",
+          "replace": "if (!registered) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-multiwriter-auto-exclusive",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Reserve one exclusive writer during automatic approval",
+      "edits": [
+        {
+          "find": "if (request.decision !== undefined || request.autoTried) continue;",
+          "replace": "if (request.decision !== undefined || request.autoTried) continue;\n        if (request.access === 'control' && [...pendingRequests.values()].some(other => other.decision === 'control')) continue;"
+        }
+      ]
+    },
+    {
+      "id": "js-pause-keeps-auto",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Keep auto-accept enabled after pausing remote writes",
+      "edits": [
+        {
+          "find": "remoteWritesPaused = true;\n    autoAccept = false;",
+          "replace": "remoteWritesPaused = true;\n    // mutation: keep automatic approval enabled"
+        }
+      ]
+    },
+    {
+      "id": "js-stop-sharing-closes-local",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Disable the local port when only stopping sharing",
+      "edits": [
+        {
+          "find": "function stopSharing() {",
+          "replace": "function stopSharing() {\n    isOpen = false;"
+        }
+      ]
+    },
+    {
+      "id": "js-unpainted-history-unbounded",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Retain discarded payloads while animation frames are paused",
+      "edits": [
+        {
+          "find": "pendingRecords.delete(removed.id);",
+          "replace": "// mutation: retain unpainted discarded data"
+        }
+      ]
+    },
+    {
+      "id": "js-local-line-ending-limit",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Allow line endings to exceed the serial payload limit",
+      "edits": [
+        {
+          "find": "if (!suffix || bytes.length + suffix.length > SerialData.MAX_SEND_BYTES)",
+          "replace": "if (!suffix)"
+        },
+        {
+          "find": "bytes.length > SerialData.MAX_SEND_BYTES || pendingWrites >= MAX_PENDING_WRITES",
+          "replace": "false || pendingWrites >= MAX_PENDING_WRITES"
+        }
+      ]
+    },
+    {
+      "id": "go-network-unbounded-response",
+      "file": "handler/network.go",
+      "suite": "go-server",
+      "description": "Accept oversized network probe responses",
+      "edits": [
+        {
+          "find": "value > MaxNetworkSampleBytes",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-deadline-too-short",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Reject usable high-latency responses with a short probe deadline",
+      "edits": [
+        {
+          "find": "const PROBE_TIMEOUT_MS = 5000;",
+          "replace": "const PROBE_TIMEOUT_MS = 1500;"
+        }
+      ]
+    },
+    {
+      "id": "js-network-download-deadline-too-short",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Reject measurable downloads before they can finish",
+      "edits": [
+        {
+          "find": "const DOWNLOAD_TIMEOUT_MS = 10000;",
+          "replace": "const DOWNLOAD_TIMEOUT_MS = 4000;"
+        }
+      ]
+    },
+    {
+      "id": "js-network-hide-http-failure",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Hide the HTTP status needed to distinguish expired authentication",
+      "edits": [
+        {
+          "find": "failure = { kind: 'http', status: response.status };",
+          "replace": "failure = { kind: 'network' };"
+        }
+      ]
+    },
+    {
+      "id": "js-network-base64-cost",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Ignore Base64 expansion in baud estimates",
+      "edits": [
+        {
+          "find": "4 * Math.ceil(chunkBytes / 3)",
+          "replace": "chunkBytes"
+        }
+      ]
+    },
+    {
+      "id": "js-network-headroom",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Remove the network capacity reserve",
+      "edits": [
+        {
+          "find": "* 10 * 0.5;",
+          "replace": "* 10;"
+        }
+      ]
+    },
+    {
+      "id": "js-network-failed-probes",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Recommend a baud despite mostly failed probes",
+      "edits": [
+        {
+          "find": "failed >= probes / 2",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-network-compressed-sample",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Trust compressed data as link bandwidth",
+      "edits": [
+        {
+          "find": "if (bytes && encoding && encoding !== 'identity')",
+          "replace": "if (false)"
+        }
+      ]
+    },
+    {
+      "id": "js-network-fastest-sample",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Use optimistic fastest sample instead of conservative bandwidth",
+      "edits": [
+        {
+          "find": "Math.min(...rates)",
+          "replace": "Math.max(...rates)"
+        }
+      ]
+    },
+    {
+      "id": "js-network-auto-start",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Start data transfer automatically when the page opens",
+      "edits": [
+        {
+          "find": "if (root.document) root.addEventListener('DOMContentLoaded', initialize);",
+          "replace": "if (root.document) root.addEventListener('DOMContentLoaded', initialize);\n    if (root.document) root.addEventListener('DOMContentLoaded', () => root.document.getElementById('networkEvaluateBtn').click());"
+        }
+      ]
+    },
+    {
+      "id": "js-network-auto-change-baud",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Silently change physical serial configuration after assessment",
+      "edits": [
+        {
+          "find": "const bandwidth = report.bytesPerSecond ?",
+          "replace": "root.document.getElementById('baudRate').value = String(report.baud);\n                const bandwidth = report.bytesPerSecond ?"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-global-connections",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Ignore global connection capacity",
+      "edits": [
+        {
+          "find": "m.stats.Connections >= m.cfg.MaxConnections",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-ip-connections",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Ignore per-IP connection capacity",
+      "edits": [
+        {
+          "find": "p.active >= m.cfg.MaxConnectionsPerIP",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-connection-attempts",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Ignore reconnect attempt budget",
+      "edits": [
+        {
+          "find": "p.connections.tokens < 1",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-ip-http-rate",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Ignore per-IP HTTP request budget",
+      "edits": [
+        {
+          "find": "p.http.tokens < 1",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-global-bytes",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Allow aggregate traffic beyond the global budget",
+      "edits": [
+        {
+          "find": "m.global.tokens < float64(n)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-ip-bytes",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Reset effective IP byte quota across parallel sockets",
+      "edits": [
+        {
+          "find": "p.data.tokens < float64(n)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-daily-bytes",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Ignore the daily relay/sample allowance",
+      "edits": [
+        {
+          "find": "metered && n > m.cfg.DailyBytes-m.stats.DailyReservedBytes",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-ip-state",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Allocate unlimited anonymous IP state",
+      "edits": [
+        {
+          "find": "len(m.peers) >= MaxTrackedIPs",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-lookup-rate",
+      "file": "resource/limits.go",
+      "suite": "go-server",
+      "description": "Allow unlimited code lookups across reconnects",
+      "edits": [
+        {
+          "find": "l.peer.requests.tokens < 1",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-fanout-cost",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Charge only one copy of a multi-Remote relay",
+      "edits": [
+        {
+          "find": "len(encoded) * copyCount",
+          "replace": "len(encoded)"
+        }
+      ]
+    },
+    {
+      "id": "go-resource-queue-bytes",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Rely only on frame count for outbound memory limits",
+      "edits": [
+        {
+          "find": "client.queuedBytes.Load()+int64(len(data)) > h.resources.Config().MaxQueuedBytes",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-resource-idle-remote",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Allocate a WebSocket on every idle Remote page",
+      "edits": [
+        {
+          "find": "if (autoReconnectEnabled && reconnectLocalId) {",
+          "replace": "if (!isPending && !isConnected) connectWebSocket();\n    if (autoReconnectEnabled && reconnectLocalId) {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-paused-forward",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Forward commands while remote writes are paused",
+      "edits": [
+        {
+          "find": "if local.writesPaused {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-old-epoch",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept pre-pause commands after resume",
+      "edits": [
+        {
+          "find": "if message.WriteEpoch != local.writeEpoch {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-foreign-grant",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Trust missing or foreign grant generations",
+      "edits": [
+        {
+          "find": "if message.GrantID == \"\" || message.GrantID != target.grantID {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-legacy-share",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept legacy share under v3 permissions",
+      "edits": [
+        {
+          "find": "func (h *Hub) share(client *Client, message Message) {\n\tif message.Version != ProtocolVersion {",
+          "replace": "func (h *Hub) share(client *Client, message Message) {\n\tif false {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-legacy-connect",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept legacy connect under v3 permissions",
+      "edits": [
+        {
+          "find": "func (h *Hub) connect(client *Client, message Message) {\n\tif message.Version != ProtocolVersion {",
+          "replace": "func (h *Hub) connect(client *Client, message Message) {\n\tif false {"
+        }
+      ]
+    },
+    {
+      "id": "go-v3-write-state-owner",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Select a write-state owner from untrusted message.localId",
+      "edits": [
+        {
+          "find": "func (h *Hub) setWriteState(local *Client, message Message) {",
+          "replace": "func (h *Hub) setWriteState(local *Client, message Message) {\n\tif claimed := h.locals[message.LocalID]; claimed != nil { local = claimed }"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-stale-grant",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Ignore the active grant generation",
+      "edits": [
+        {
+          "find": "grantId === remote.grantId",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-stale-epoch",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Ignore the active remote write epoch",
+      "edits": [
+        {
+          "find": "epoch === writeEpoch",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-parallel-writes",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Start each serial write independently instead of using the shared FIFO",
+      "edits": [
+        {
+          "find": "writeChain = writeChain.then(async () => {\n        if (!isOpen || isClosing || writer !== activeWriter) return;",
+          "replace": "writeChain = Promise.resolve().then(async () => {"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-pause-drops-readers",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Discard Remote approvals when pausing remote writes",
+      "edits": [
+        {
+          "find": "remoteWritesPaused = true;\n    autoAccept = false;",
+          "replace": "remoteWritesPaused = true;\n    connectedRemotes.clear();\n    autoAccept = false;"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-write-source",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Misattribute all completed Remote writes to Local",
+      "edits": [
+        {
+          "find": "recordSerial('TX', bytes, source, order);",
+          "replace": "recordSerial('TX', bytes, '本机', order);"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-submit-while-paused",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Submit remote writes through shortcuts while paused",
+      "edits": [
+        {
+          "find": "if (remoteWritesPaused) { showError('Local 已暂停远端发送，仍可接收数据'); return false; }",
+          "replace": "if (false) { return; }"
+        }
+      ]
+    },
+    {
+      "id": "js-v3-stale-state",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Apply late state messages and roll back a newer write epoch",
+      "edits": [
+        {
+          "find": "if (!isConnected || message.localId !== localId || message.version !== 3 || typeof message.paused !== 'boolean' || !Number.isSafeInteger(message.writeEpoch) || message.writeEpoch <= writeEpoch) return;",
+          "replace": "if (!isConnected || message.localId !== localId || message.version !== 3 || typeof message.paused !== 'boolean' || !Number.isSafeInteger(message.writeEpoch) || false) return;"
+        }
+      ]
+    },
+    {
+      "id": "go-config-reader",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Allow read-only Remote configuration",
+      "edits": [
+        {
+          "find": "if target.access != AccessControl {",
+          "replace": "if false && (target.access != AccessControl) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-target",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Ignore the approved serial port for configuration",
+      "edits": [
+        {
+          "find": "if local == nil || message.PortID != target.portID {",
+          "replace": "if false && (local == nil || message.PortID != target.portID) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-grant",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Accept a stale configuration grant",
+      "edits": [
+        {
+          "find": "if message.GrantID == \"\" || message.GrantID != target.grantID {",
+          "replace": "if false && (message.GrantID == \"\" || message.GrantID != target.grantID) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-pause",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Allow configuration while Local paused operations",
+      "edits": [
+        {
+          "find": "if local.writesPaused {",
+          "replace": "if false && (local.writesPaused) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-epoch",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Accept a configuration from an obsolete write epoch",
+      "edits": [
+        {
+          "find": "if message.WriteEpoch != local.writeEpoch {",
+          "replace": "if false && (message.WriteEpoch != local.writeEpoch) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-capability",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Configure a Local without the explicit configuration capability",
+      "edits": [
+        {
+          "find": "if local.serialConfig == nil || message.ConfigProtocol != 1 {",
+          "replace": "if false && (local.serialConfig == nil || message.ConfigProtocol != 1) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-concurrent",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Allow another configuration while the driver operation is pending",
+      "edits": [
+        {
+          "find": "if local.configuration != nil {\n\t\tfail(\"configuration_busy\", \"Another configuration request is still pending\")",
+          "replace": "if false && local.configuration != nil {\n\t\tfail(\"configuration_busy\", \"Another configuration request is still pending\")"
+        }
+      ]
+    },
+    {
+      "id": "go-config-revision",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Overwrite serial settings from an obsolete revision",
+      "edits": [
+        {
+          "find": "if message.ConfigRevision != local.configRevision {",
+          "replace": "if false && (message.ConfigRevision != local.configRevision) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-input",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Forward unsupported serial settings",
+      "edits": [
+        {
+          "find": "message.RequestID == \"\" || len(message.RequestID) > 128 || !validSerialConfig(message.SerialConfig)",
+          "replace": "message.RequestID == \"\" || len(message.RequestID) > 128 || false"
+        }
+      ]
+    },
+    {
+      "id": "go-config-stale-completion",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Let a previous configuration completion settle the current operation",
+      "edits": [
+        {
+          "find": "message.ConfigID != change.id || message.PortID != change.target.portID ||",
+          "replace": "false || message.PortID != change.target.portID ||"
+        }
+      ]
+    },
+    {
+      "id": "go-config-success-mismatch",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Accept success for physical parameters different from the requested settings",
+      "edits": [
+        {
+          "find": "(*message.Success && !sameSerialConfig(message.SerialConfig, &change.desired))",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-config-failure-mismatch",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Claim rollback while Local actually reports different parameters",
+      "edits": [
+        {
+          "find": "(!*message.Success && !sameSerialConfig(message.SerialConfig, local.serialConfig))",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-config-uncertain-port",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Keep sharing after Local cannot confirm an open port",
+      "edits": [
+        {
+          "find": "if !*message.PortOpen || !validSerialConfig(message.SerialConfig) ||",
+          "replace": "if false || !validSerialConfig(message.SerialConfig) ||"
+        }
+      ]
+    },
+    {
+      "id": "go-config-expiry",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Leave timed-out configuration sessions usable",
+      "edits": [
+        {
+          "find": "if local.configuration != nil && !h.now().Before(local.configuration.expiresAt) {",
+          "replace": "if false && local.configuration != nil && !h.now().Before(local.configuration.expiresAt) {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-cancel-lock",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Leave Local unaware that a pending physical configuration was cancelled",
+      "edits": [
+        {
+          "find": "h.send(local, Message{Type: MsgTypeCancelSerialConfig, ConfigID: change.id, Code: code})",
+          "replace": "// mutation: omit cancellation delivery to the physical port owner"
+        }
+      ]
+    },
+    {
+      "id": "go-config-legacy-epoch",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Stop communicating configuration epochs to older v3 Remotes",
+      "edits": [
+        {
+          "find": "state.Type = MsgTypeWriteState",
+          "replace": "state.Type = MsgTypeSerialConfigState"
+        }
+      ]
+    },
+    {
+      "id": "go-config-write-lock",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Forward serial bytes while parameters are changing",
+      "edits": [
+        {
+          "find": "if local.configuration != nil {",
+          "replace": "if false && local.configuration != nil {"
+        }
+      ]
+    },
+    {
+      "id": "go-config-bits",
+      "file": "websocket/config.go",
+      "suite": "go-hub",
+      "description": "Reject the supported seven-bit data mode",
+      "edits": [
+        {
+          "find": "(config.DataBits != 7 && config.DataBits != 8)",
+          "replace": "(config.DataBits != 8)"
+        }
+      ]
+    },
+    {
+      "id": "js-config-write-busy",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Reopen a serial port while a previous write is pending",
+      "edits": [
+        {
+          "find": "if (pendingWrites !== 0)",
+          "replace": "if (false)"
+        }
+      ]
+    },
+    {
+      "id": "js-config-local-grant",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Let Local apply settings using an obsolete grant",
+      "edits": [
+        {
+          "find": "remote.grantId === message.grantId",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-config-local-port",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Let Local apply a configuration to an unrelated port",
+      "edits": [
+        {
+          "find": "remote.portId === message.portId && message.portId === elements.portSelect.value",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-config-local-epoch",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Apply an old configuration request after an epoch change",
+      "edits": [
+        {
+          "find": "message.writeEpoch === writeEpoch",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-config-stale-operation",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Consume a new operation with a stale configuration request",
+      "edits": [
+        {
+          "find": "operation.id !== message.configId || ",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "js-config-cancelled-step",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Ignore server cancellation until a later permission notification arrives",
+      "edits": [
+        {
+          "find": "operation.cancelled = true;",
+          "replace": "operation.cancelled = false;"
+        }
+      ]
+    },
+    {
+      "id": "js-config-after-close",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Start opening new settings after authorization was revoked during close",
+      "edits": [
+        {
+          "find": "phase = 'closed';\n        checkAuthorization();",
+          "replace": "phase = 'closed';"
+        }
+      ]
+    },
+    {
+      "id": "js-config-after-open",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Commit new parameters after pause cancelled an in-flight driver open",
+      "edits": [
+        {
+          "find": "phase = 'opened';\n        checkAuthorization();",
+          "replace": "phase = 'opened';"
+        }
+      ]
+    },
+    {
+      "id": "js-config-no-rollback",
+      "file": "static/js/local-config.js",
+      "suite": "frontend",
+      "description": "Leave the device closed after a failed configuration instead of restoring it",
+      "edits": [
+        {
+          "find": "if (closed) await physicalPort.open(previous);",
+          "replace": "// mutation: omit rollback open"
+        }
+      ]
+    },
+    {
+      "id": "js-config-remote-reader",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Allow a read-only Remote to submit configuration",
+      "edits": [
+        {
+          "find": "if (!isConnected || access !== 'control' || !serialConfig || remoteWritesPaused || configuring || pendingConfig || !ws || ws.readyState !== WebSocket.OPEN) return;",
+          "replace": "if (!isConnected || false || !serialConfig || remoteWritesPaused || configuring || pendingConfig || !ws || ws.readyState !== WebSocket.OPEN) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-config-remote-revision",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Roll back confirmed parameters using an old revision with a new epoch",
+      "edits": [
+        {
+          "find": "message.configRevision < configRevision ||",
+          "replace": "false ||"
+        }
+      ]
+    },
+    {
+      "id": "js-config-send-during-change",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Submit serial bytes through shortcuts during parameter changes",
+      "edits": [
+        {
+          "find": "if (configuring || pendingConfig) { showError('串口参数正在修改，请完成后重新发送'); return false; }",
+          "replace": "if (false) { return; }"
+        }
+      ]
+    },
+    {
+      "id": "js-config-unsupported-bits",
+      "file": "static/js/serial-config.js",
+      "suite": "frontend",
+      "description": "Allow unsupported six-bit data configuration",
+      "edits": [
+        {
+          "find": "[7, 8].includes(config.dataBits)",
+          "replace": "[6, 7, 8].includes(config.dataBits)"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-cache-byte-cap",
+      "file": "static/js/rx-replay.js",
+      "suite": "frontend",
+      "description": "Allow the Local RX replay cache to exceed its byte cap",
+      "edits": [
+        {
+          "find": "buffer.bytes > MAX_BYTES",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-cache-frame-cap",
+      "file": "static/js/rx-replay.js",
+      "suite": "frontend",
+      "description": "Allow the Local RX replay cache to exceed its frame cap",
+      "edits": [
+        {
+          "find": "buffer.frames.length > MAX_FRAMES",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-cache-ttl",
+      "file": "static/js/rx-replay.js",
+      "suite": "frontend",
+      "description": "Keep expired serial RX replay frames available",
+      "edits": [
+        {
+          "find": "now - buffer.frames[0].at >= MAX_AGE_MS",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-dedup-removed",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Display duplicate RX sequence frames twice",
+      "edits": [
+        {
+          "find": "if (message.rxSeq <= lastRxSeq) {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-replay-window-unbounded",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Send more than the bounded RX replay acknowledgement window",
+      "edits": [
+        {
+          "find": "transfer.inFlight.size < MAX_RX_REPLAY_IN_FLIGHT",
+          "replace": "transfer.inFlight.size < MAX_RX_REPLAY_IN_FLIGHT * 2"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-forward-before-register",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Forward RX before the server confirms registration",
+      "edits": [
+        {
+          "find": "if (!registered || !ws || ws.readyState !== WebSocket.OPEN || !localId) continue;",
+          "replace": "if (!ws || ws.readyState !== WebSocket.OPEN || !localId) continue;"
+        }
+      ]
+    },
+    {
+      "id": "go-rx-sequence-order",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Accept non-monotonic Local RX sequence frames",
+      "edits": [
+        {
+          "find": "message.RXSeq != client.rxSequence+1",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-rx-replay-grant-check",
+      "file": "websocket/replay.go",
+      "suite": "go-hub",
+      "description": "Route cached RX bytes without validating the active grant",
+      "edits": [
+        {
+          "find": "target.grantID != message.GrantID || remote.replay == nil",
+          "replace": "false || remote.replay == nil"
+        }
+      ]
+    },
+    {
+      "id": "go-rx-replay-live-order",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Let live RX overtake an in-progress replay",
+      "edits": [
+        {
+          "find": "if remote.replay != nil && sequenced && remote.replay.streamID == message.RXStreamID {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "go-rx-replay-queue-unbounded",
+      "file": "websocket/replay.go",
+      "suite": "go-hub",
+      "description": "Allow the per-Remote RX replay wait queue to exceed its byte cap",
+      "edits": [
+        {
+          "find": "replay.queuedBytes+encodedBytes > MaxRXReplayQueueBytes",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-rx-ack-order",
+      "file": "websocket/replay.go",
+      "suite": "go-hub",
+      "description": "Accept an RX acknowledgement for a frame not sent yet",
+      "edits": [
+        {
+          "find": "message.RXSeq > replay.nextSeq-1",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-replay-rate-unbounded",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Send the RX replay window without respecting the service byte budget",
+      "edits": [
+        {
+          "find": "const delay = RxReplay.replayBudgetDelay(transfer.budget, payload.length);",
+          "replace": "const delay = 0;"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-budget-unbounded",
+      "file": "static/js/rx-replay.js",
+      "suite": "frontend",
+      "description": "Ignore the RX replay upload byte budget",
+      "edits": [
+        {
+          "find": "if (budget.tokens >= bytes) {",
+          "replace": "if (true) {"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manifest-chip",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Accept a firmware manifest for a different detected chip",
+      "edits": [
+        {
+          "find": "if (normalizedChip(detectedChip) !== parsed.chip)",
+          "replace": "if (false && normalizedChip(detectedChip) !== parsed.chip)"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manifest-extra-image",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Silently accept a binary image not listed in the manifest",
+      "edits": [
+        {
+          "find": "if (!expectedNames.has(String(file.name || '').toLowerCase()))",
+          "replace": "if (false && !expectedNames.has(String(file.name || '').toLowerCase()))"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manifest-flash-bounds",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Allow an image range past the detected flash capacity",
+      "edits": [
+        {
+          "find": "if (end > flashBytes)",
+          "replace": "if (false && end > flashBytes)"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manifest-overlap",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Allow overlapping firmware image ranges",
+      "edits": [
+        {
+          "find": "if (ordered[i].address < ordered[i - 1].end)",
+          "replace": "if (false && ordered[i].address < ordered[i - 1].end)"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manifest-sha256",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Write a firmware image without checking its SHA-256",
+      "edits": [
+        {
+          "find": "if (actualHash !== descriptor.sha256)",
+          "replace": "if (false && actualHash !== descriptor.sha256)"
+        }
+      ]
+    },
+    {
+      "id": "go-flash-ordinary-send-lock",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Allow ordinary serial writes to interleave with an ESP32 flash session",
+      "edits": [
+        {
+          "find": "if h.flashSessions[local] != nil {\n\t\th.fail(client, \"flash_busy\", \"The serial port is reserved for ESP32 flashing\")",
+          "replace": "if false && h.flashSessions[local] != nil {\n\t\th.fail(client, \"flash_busy\", \"The serial port is reserved for ESP32 flashing\")"
+        }
+      ]
+    },
+    {
+      "id": "go-flash-send-owner",
+      "file": "websocket/flash.go",
+      "suite": "go-hub",
+      "description": "Let a different approved Remote use another Remote's flash session",
+      "edits": [
+        {
+          "find": "session == nil || session.remote != remote ||\n\t\tsession.starting || session.ending || session.id != message.FlashSessionID {\n\t\th.fail(remote, \"stale_flash_session\", \"Flash session is no longer active\")",
+          "replace": "session == nil || false ||\n\t\tsession.starting || session.ending || session.id != message.FlashSessionID {\n\t\th.fail(remote, \"stale_flash_session\", \"Flash session is no longer active\")"
+        }
+      ]
+    },
+    {
+      "id": "go-flash-signals-owner",
+      "file": "websocket/flash.go",
+      "suite": "go-hub",
+      "description": "Let another approved Remote change the flash owner's DTR/RTS signals",
+      "edits": [
+        {
+          "find": "session == nil || session.remote != remote ||\n\t\tsession.starting || session.ending || session.id != message.FlashSessionID {\n\t\th.fail(remote, \"stale_flash_session\", \"Serial signals are available only during your active flash session\")",
+          "replace": "session == nil || false ||\n\t\tsession.starting || session.ending || session.id != message.FlashSessionID {\n\t\th.fail(remote, \"stale_flash_session\", \"Serial signals are available only during your active flash session\")"
+        }
+      ]
+    },
+    {
+      "id": "go-flash-pause-release",
+      "file": "websocket/access.go",
+      "suite": "go-hub",
+      "description": "Keep an ESP32 flash lock active after Local pauses remote operations",
+      "edits": [
+        {
+          "find": "if h.flashSessions[local] != nil {\n\t\t\th.releaseFlashSession(local, \"writes_paused\", true)",
+          "replace": "if false && h.flashSessions[local] != nil {\n\t\t\th.releaseFlashSession(local, \"writes_paused\", true)"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manual-address",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Ignore the selected manual image address",
+      "edits": [
+        {
+          "find": "images: layout.map(image => ({ file: image.file, address: image.address, sha256: '0'.repeat(64) }))",
+          "replace": "images: layout.map(image => ({ file: image.file, address: '0x0', sha256: '0'.repeat(64) }))"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-manual-allocation",
+      "file": "static/js/esp32-manifest.js",
+      "suite": "frontend",
+      "description": "Allow oversized firmware allocation before validation",
+      "edits": [
+        {
+          "find": "const MAX_TOTAL_BYTES = 32 * 1024 * 1024;",
+          "replace": "const MAX_TOTAL_BYTES = 64 * 1024 * 1024;"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-address-confirmation",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Keep a verified old address after editing the write address",
+      "edits": [
+        {
+          "find": "clearVerified('写入地址已改变，请重新校验并确认。');",
+          "replace": "updateControls();"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-stale-verification",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Accept stale asynchronous verification after the form changes",
+      "edits": [
+        {
+          "find": "if (revision !== state.firmwareRevision || sessionId !== state.flashSessionId || loader !== state.loader || !state.flashActive || state.paused) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-compressed-progress",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Count compressed bytes as raw image bytes",
+      "edits": [
+        {
+          "find": "images[fileIndex].size * Math.min(1, written / total)",
+          "replace": "Math.min(images[fileIndex].size, written)"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-progress-completion",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Show full completion before reset and lock release",
+      "edits": [
+        {
+          "find": "return Math.min(99, Math.floor((previous + current) * 100 / totalBytes));",
+          "replace": "return Math.min(100, Math.floor((previous + current) * 100 / totalBytes));"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-late-progress",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Allow a stopped flash callback to alter the next connection",
+      "edits": [
+        {
+          "find": "if (!ownsFlashTask(task)) return;\n                const percent",
+          "replace": "if (false) return;\n                const percent"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-sdk-cancel",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Start a flash session after the user cancels SDK preparation",
+      "edits": [
+        {
+          "find": "if (preparation !== state.toolPreparationVersion || socket !== state.ws || grantId !== state.grantId || !connected()) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-restore-completion",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "Report success when restoring the Local baud rate fails",
+      "edits": [
+        {
+          "find": "if (await restoreOriginalConfig() === false) throw new Error",
+          "replace": "if (await restoreOriginalConfig() === true) throw new Error"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-sdk-retry",
+      "file": "static/js/remote-serial-port.js",
+      "suite": "frontend",
+      "description": "Cache a failed SDK load and prevent user retries",
+      "edits": [
+        {
+          "find": "pending = null;\n            throw error;",
+          "replace": "throw error;"
+        }
+      ]
+    },
+    {
+      "id": "js-esp32-sdk-retry-url",
+      "file": "static/js/remote-serial-port.js",
+      "suite": "frontend",
+      "description": "Reuse a failed module URL instead of retrying with a new attempt",
+      "edits": [
+        {
+          "find": "const currentAttempt = attempt++;",
+          "replace": "const currentAttempt = 0;"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-current-grant",
+      "file": "websocket/probe.go",
+      "description": "Reject stale probe authorization",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "if message.GrantID != target.grantID || message.PortID != target.portID {",
+          "replace": "if message.PortID != target.portID {"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-local-owner",
+      "file": "websocket/probe.go",
+      "description": "Require the actual sharing Local for probe signaling",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "if sender.role == RoleLocal && owner != local {",
+          "replace": "if false && sender.role == RoleLocal && owner != local {"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-reader-frame",
+      "file": "websocket/probe.go",
+      "description": "Reject synthetic data sent by an approved reader",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "target.access != AccessControl || local.writesPaused || message.WriteEpoch != local.writeEpoch",
+          "replace": "false || local.writesPaused || message.WriteEpoch != local.writeEpoch"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-paused-frame",
+      "file": "websocket/probe.go",
+      "description": "Reject synthetic writes while Local pauses Remote operations",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "target.access != AccessControl || local.writesPaused || message.WriteEpoch != local.writeEpoch",
+          "replace": "target.access != AccessControl || false || message.WriteEpoch != local.writeEpoch"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-stale-epoch",
+      "file": "websocket/probe.go",
+      "description": "Reject old synthetic writes after a pause or resume",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "target.access != AccessControl || local.writesPaused || message.WriteEpoch != local.writeEpoch",
+          "replace": "target.access != AccessControl || local.writesPaused || false"
+        }
+      ]
+    },
+    {
+      "id": "go-probe-synthetic-port",
+      "file": "websocket/hub.go",
+      "description": "Keep the P2P prototype away from physical serial registrations",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "message.ProbeProtocol != 1 || message.Ports[0].PortID != ProbePortID || message.ConfigProtocol != 0",
+          "replace": "message.ProbeProtocol != 1 || false || message.ConfigProtocol != 0"
+        }
+      ]
+    },
+    {
+      "id": "js-probe-late-direct-frame",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Ignore delayed direct frames after fallback",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (!this.active() || this.mode !== 'p2p') return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-probe-stale-sdp",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Fence SDP completion after authorization ends",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "return !this.closed && this.mode !== 'websocket' && this.valid();",
+          "replace": "return !this.closed && this.mode !== 'websocket';"
+        }
+      ]
+    },
+    {
+      "id": "js-probe-backpressure",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Bound DataChannel buffering before submitting another frame",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "while (mode === 'p2p' && this.channel.bufferedAmount + frame.length > MAX_BACKLOG) {",
+          "replace": "while (false) {"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-current-grant",
+      "file": "websocket/serial_p2p.go",
+      "description": "Reject stale physical direct grants",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "message.PortID != target.portID || message.GrantID != target.grantID ||",
+          "replace": "message.PortID != target.portID || false ||"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-local-owner",
+      "file": "websocket/serial_p2p.go",
+      "description": "Require actual Local socket for physical direct negotiation",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "(sender != local && sender != remote)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-reader-tx",
+      "file": "websocket/serial_p2p.go",
+      "description": "Readers cannot obtain physical write permits",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "owner != remote || remote.role != RoleRemote || target.access != AccessControl",
+          "replace": "owner != remote || remote.role != RoleRemote || false"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-paused-tx",
+      "file": "websocket/serial_p2p.go",
+      "description": "Paused Local cannot grant physical direct writes",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "case local.writesPaused:",
+          "replace": "case false:"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-stale-epoch",
+      "file": "websocket/serial_p2p.go",
+      "description": "Write permits require current epoch",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "case message.WriteEpoch != local.writeEpoch:",
+          "replace": "case false:"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-duplicate-tx",
+      "file": "websocket/serial_p2p.go",
+      "description": "Reject duplicate physical direct command sequences",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "message.TXSeq <= remote.serialTXSequence",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-changing-config",
+      "file": "websocket/serial_p2p.go",
+      "description": "Block direct writes while configuration is uncertain",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "case local.configuration != nil:",
+          "replace": "case false:"
+        }
+      ]
+    },
+    {
+      "id": "go-serial-p2p-flash-exclusive",
+      "file": "websocket/serial_p2p.go",
+      "description": "Keep ordinary direct writes out of a flash-exclusive session",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "case h.flashSessions[local] != nil:",
+          "replace": "case false:"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-byte-digest",
+      "file": "static/js/serial-p2p.js",
+      "description": "Refuse bytes not bound to the server permit digest",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "await digest(item.bytes) !== message.sha256",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-revoked-digest",
+      "file": "static/js/serial-p2p.js",
+      "description": "Recheck permission after asynchronous digest before entering serial FIFO",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (!this.active() || !this.direct || generation !== this.generation || writeGeneration !== this.writeGeneration || !this.canTX(message.writeEpoch)) continue;",
+          "replace": "if (false) continue;"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-duplicate-frame",
+      "file": "static/js/serial-p2p.js",
+      "description": "Ignore a direct TX frame whose permit was already consumed",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (packet.sequence <= this.lastPermit && !this.incoming.has(packet.sequence)) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-incoming-bound",
+      "file": "static/js/serial-p2p.js",
+      "description": "Bound direct frames awaiting server authorization",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (this.incoming.size >= MAX_PENDING)",
+          "replace": "if (false)"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-missing-tail",
+      "file": "static/js/serial-p2p.js",
+      "description": "Recover a missing direct receive tail from the authorized cache",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (Number.isSafeInteger(sequence) && sequence >= 0) { this.head = Math.max(this.head, sequence); this.schedule(); }",
+          "replace": "if (false) { this.head = Math.max(this.head, sequence); this.schedule(); }"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-replay-start-fence",
+      "file": "static/js/serial-p2p.js",
+      "description": "Freeze late live WSS frames until the server starts authorized replay",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (this.replayStarted && !direct && sequence <= this.replayThrough) { this.deliver(message); this.noteProgress(); return; }",
+          "replace": "if (!direct) { this.deliver(message); this.noteProgress(); return; }"
+        }
+      ]
+    },
+    {
+      "id": "js-serial-p2p-stale-tx-notice",
+      "file": "static/js/remote.js",
+      "description": "Do not let an old direct TX failure overwrite a fresh grant notice",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (ws === socket && serialPeer === peer && isConnected && grantId === authorization && writeEpoch === epoch && current()) showError(error.message);",
+          "replace": "if (isConnected) showError(error.message);"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-diagnostic-code-bound",
+      "file": "websocket/serial_p2p.go",
+      "description": "Reject untrusted raw diagnostic codes before logging or forwarding",
+      "suite": "go-server",
+      "edits": [
+        {
+          "find": "!validP2PReason(message.P2PReason)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-first-failure-preserved",
+      "file": "websocket/serial_p2p.go",
+      "description": "Retain the original failure code when the other endpoint also falls back",
+      "suite": "go-server",
+      "edits": [
+        {
+          "find": "if !remote.serialFallback {\n\t\t\t\tremote.serialFallbackReporter = sender.role",
+          "replace": "if true {\n\t\t\t\tremote.serialFallbackReporter = sender.role"
+        }
+      ]
+    },
+    {
+      "id": "go-stun-server-count-bound",
+      "file": "ice_config.go",
+      "description": "Bound operator-configured ICE endpoints",
+      "suite": "go-server",
+      "edits": [
+        {
+          "find": "if len(urls) > 4 {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-apply-stun-configuration",
+      "file": "static/js/serial-p2p.js",
+      "description": "Pass operator STUN configuration to native WebRTC",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "iceServers: config.iceServers,",
+          "replace": "iceServers: [],"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-preserve-failure-reason",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Retain the actual timeout or native failure reason for diagnosis",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "this.note('fallback', reason);",
+          "replace": "this.note('fallback', 'application');"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-diagnostic-error-redaction",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Do not expose private raw browser error text in diagnostics",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "this.diagnostic.errorName = ['NotAllowedError','NotSupportedError','InvalidStateError','OperationError','TypeError','SyntaxError','RTCError'].includes(error?.name) ? error.name : 'Error';",
+          "replace": "this.diagnostic.errorName = error?.message || 'Error';"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-premature-serial-deadline",
+      "file": "static/js/serial-p2p.js",
+      "description": "Let serial ICE finish after the old twelve-second application cutoff while keeping a finite bound",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "timeoutMs: this.retryProtocol === 1 ? Math.max(1, Math.min(45000, this.retryUntil-Date.now())) : 45000,",
+          "replace": "timeoutMs: this.retryProtocol === 1 ? Math.max(1, Math.min(12000, this.retryUntil-Date.now())) : 12000,"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-forensics-validation",
+      "file": "websocket/serial_p2p.go",
+      "description": "Reject unbounded and non-enum diagnostic details before forwarding",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "!validP2PDetails(message.P2PDetails)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-forensics-reporter",
+      "file": "websocket/serial_p2p.go",
+      "description": "Take the failure reporter from the live socket",
+      "suite": "go-hub",
+      "edits": [
+        {
+          "find": "remote.serialFallbackReporter = sender.role",
+          "replace": "remote.serialFallbackReporter = message.P2PReporter"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-forensics-revocation",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Do not emit late diagnostics after authorization ends",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "if (notify && valid && this.valid()) { this.failureReported=true;this.sendSignal('fallback', ''); }",
+          "replace": "if (notify && valid) { this.failureReported=true;this.sendSignal('fallback', ''); }"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-forensics-capture-budget",
+      "file": "static/js/p2p-probe-link.js",
+      "description": "Bound failure capture to 200ms without delaying the relay path",
+      "suite": "frontend",
+      "edits": [
+        {
+          "find": "setTimeout(() => resolve(null),200)",
+          "replace": "setTimeout(() => resolve(null),20000)"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-retry-round",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Fence old negotiation and TX messages after retry",
+      "edits": [
+        {
+          "find": "message.P2PAttempt != remote.serialAttempt {",
+          "replace": "false {"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-retry-owner",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Only the actual Remote can request a new round",
+      "edits": [
+        {
+          "find": "sender != remote || negotiatedSerialP2PRetry(local, remote) != 1 || !remote.serialFallback ||",
+          "replace": "false || negotiatedSerialP2PRetry(local, remote) != 1 || !remote.serialFallback ||"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-retry-count",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Bound each grant to four connection attempts",
+      "edits": [
+        {
+          "find": "remote.serialAttempt >= 3 || remote.serialRetryStarted.IsZero() ||",
+          "replace": "false || remote.serialRetryStarted.IsZero() ||"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-retry-window",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Do not restart the retry window after each failure",
+      "edits": [
+        {
+          "find": "!h.now().Before(remote.serialRetryStarted.Add(180*time.Second))",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "go-p2p-retry-backoff",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Enforce retry delay on the server",
+      "edits": [
+        {
+          "find": "h.now().Before(remote.serialRetryAfter)",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-retry-round",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Ignore old-round state and signaling at the browser",
+      "edits": [
+        {
+          "find": "if ((message.p2pAttempt ?? 0) !== this.attempt) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-retry-count",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Do not request a fifth negotiation round",
+      "edits": [
+        {
+          "find": "this.retryTimer || this.attempt >= MAX_ATTEMPT ||",
+          "replace": "this.retryTimer || false ||"
+        }
+      ]
+    },
+    {
+      "id": "js-p2p-retry-window",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Truncate the last round at the total retry deadline",
+      "edits": [
+        {
+          "find": "Math.min(45000, this.retryUntil-Date.now())",
+          "replace": "45000"
+        }
+      ]
+    },
+    {
+      "id": "go-hybrid-replay-no-live-queue",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Do not accumulate live payloads in a second replay wait queue",
+      "edits": [
+        {
+          "find": "message.RXSeq > remote.replay.through && negotiatedSerialP2P(local, remote) == 0",
+          "replace": "message.RXSeq > remote.replay.through"
+        }
+      ]
+    },
+    {
+      "id": "go-hybrid-replay-final-head",
+      "file": "websocket/replay.go",
+      "suite": "go-hub",
+      "description": "Advertise the latest cursor when modern backfill completes",
+      "edits": [
+        {
+          "find": "if negotiatedSerialP2P(local, remote) == 1 {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "go-hybrid-plain-wire-head",
+      "file": "websocket/hub.go",
+      "suite": "go-hub",
+      "description": "Use cursor repair for modern peers on the ordinary data route",
+      "edits": [
+        {
+          "find": "if negotiatedSerialP2P(client, remote) == 1 {",
+          "replace": "if false {"
+        }
+      ]
+    },
+    {
+      "id": "js-hybrid-live-tail-buffer",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Retain bounded direct live frames until historical backfill completes",
+      "edits": [
+        {
+          "find": "if (!this.replayStarted || sequence > this.replayThrough) this.buffer(message);",
+          "replace": "if (false) this.buffer(message);"
+        }
+      ]
+    },
+    {
+      "id": "js-hybrid-live-no-early-ack",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Do not acknowledge unsent history through direct live data",
+      "edits": [
+        {
+          "find": "this.replayStarted && !direct && sequence <= this.replayThrough",
+          "replace": "this.replayStarted"
+        }
+      ]
+    },
+    {
+      "id": "js-hybrid-local-parallel-live",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Continue live P2P RX while WSS repairs the same receiver",
+      "edits": [
+        {
+          "find": "if (peer.sendRX(cached.frame.sequence, cached.frame.data))",
+          "replace": "if (!rxReplayTransfers.has(id) && peer.sendRX(cached.frame.sequence, cached.frame.data))"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-await-submission",
+      "file": "static/js/serial-tools.js",
+      "suite": "frontend",
+      "description": "Wait for one submission before scheduling the next period",
+      "edits": [
+        {
+          "find": "sent=await this.send(()=>this.running&&generation===this.generation&&this.allowed())===true",
+          "replace": "sent=this.send(()=>this.running&&generation===this.generation&&this.allowed())!==false"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-cancel-queued",
+      "file": "static/js/serial-tools.js",
+      "suite": "frontend",
+      "description": "Invalidate a queued cycle when the user stops periodic sending",
+      "edits": [
+        {
+          "find": "()=>this.running&&generation===this.generation&&this.allowed()",
+          "replace": "()=>this.allowed()"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-permission-stop",
+      "file": "static/js/serial-tools.js",
+      "suite": "frontend",
+      "description": "Do not submit another cycle after permission disappears",
+      "edits": [
+        {
+          "find": "if(!this.allowed()){this.stop('unavailable');return}",
+          "replace": "if(false)return;"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-local-write-fence",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Stop queued periodic bytes before entering the serial driver",
+      "edits": [
+        {
+          "find": "if (!stillValid()) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-remote-grant-binding",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Bind a periodic job to the current socket, grant and write epoch",
+      "edits": [
+        {
+          "find": "() => canRemoteSend() && ws === socket && grantId === authorization && writeEpoch === epoch",
+          "replace": "() => canRemoteSend()"
+        }
+      ]
+    },
+    {
+      "id": "js-count-clear-cursor",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Clearing statistics must not rewind the RX stream",
+      "edits": [
+        {
+          "find": "rxBytes = 0; txBytes = 0;",
+          "replace": "rxBytes = 0; txBytes = 0; lastRxSeq = 0;"
+        }
+      ]
+    },
+    {
+      "id": "js-count-encoded-tx-bytes",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Count encoded bytes rather than decoded Unicode characters",
+      "edits": [
+        {
+          "find": "else if (direction === 'TX') txBytes += bytes.length;",
+          "replace": "else if (direction === 'TX') txBytes += new TextDecoder().decode(bytes).length;"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-p2p-hash-cancellation",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "A cancelled periodic job cannot create an intent after hashing",
+      "edits": [
+        {
+          "find": "if (!item.requested && !item.valid()) return false;",
+          "replace": "if (false) return false;"
+        }
+      ]
+    },
+    {
+      "id": "js-periodic-relay-backlog-bound",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Bound queued WSS bytes before submitting the next periodic payload",
+      "edits": [
+        {
+          "find": "if ((ws.bufferedAmount || 0) + new TextEncoder().encode(payload).length > 65536)",
+          "replace": "if (false)"
+        }
+      ]
+    },
+    {
+      "id": "go-retired-p2p-error-context",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Correlate a rejected old signal without weakening authorization",
+      "edits": [
+        {
+          "find": "PortID: message.PortID, GrantID: message.GrantID, RemoteID: remoteID",
+          "replace": "PortID: message.PortID, GrantID: \"\", RemoteID: remoteID"
+        }
+      ]
+    },
+    {
+      "id": "js-retired-p2p-local-notice",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "A retired peer cannot replace the current Local notice",
+      "edits": [
+        {
+          "find": "if (message.code === 'p2p_not_authorized' && message.grantId && message.remoteId &&\n                connectedRemotes.get(message.remoteId)?.grantId !== message.grantId) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-retired-p2p-remote-periodic",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "A stale error cannot stop a new grant periodic job",
+      "edits": [
+        {
+          "find": "message.code === 'p2p_not_authorized' && message.grantId && message.grantId !== grantId",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-peer-stale-permit-drop",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Discard a stale epoch permit without retaining a blocking incoming slot",
+      "edits": [
+        {
+          "find": "if (!this.canTX(message.writeEpoch)) {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "js-local-peer-write-invalidation",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "A Local write-generation change cancels queued peer writes but preserves RX",
+      "edits": [
+        {
+          "find": "if (peerWriteGeneration !== remoteWriteGeneration) {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "js-peer-cancel-digest-fence",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "A cancelled digest cannot execute after the same epoch becomes writable",
+      "edits": [
+        {
+          "find": "generation !== this.generation || writeGeneration !== this.writeGeneration || !this.canTX(message.writeEpoch)",
+          "replace": "generation !== this.generation || !this.canTX(message.writeEpoch)"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-backfill-progress-deadline",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Valid historical cursor progress renews the RX backfill deadline",
+      "edits": [
+        {
+          "find": "this.progressCursor = position; this.armRepairDeadline();",
+          "replace": "this.progressCursor = position;"
+        }
+      ]
+    },
+    {
+      "id": "js-rx-backfill-no-false-progress",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Repeated non-progress cannot keep stalled repair alive",
+      "edits": [
+        {
+          "find": "!Number.isSafeInteger(position) || position <= this.progressCursor",
+          "replace": "!Number.isSafeInteger(position)"
+        }
+      ]
+    },
+    {
+      "id": "js-network-current-route",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Use P2P exclusively when the selected route is direct",
+      "edits": [
+        {
+          "find": "if(target?.mode==='p2p'){",
+          "replace": "if(false){"
+        }
+      ]
+    },
+    {
+      "id": "js-network-current-scope",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "A changed route cannot publish an old capacity result",
+      "edits": [
+        {
+          "find": "const valid=()=>!target?.valid||target.valid();",
+          "replace": "const valid=()=>true;"
+        }
+      ]
+    },
+    {
+      "id": "js-network-p2p-framing",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Use the binary transport model for P2P capacity",
+      "edits": [
+        {
+          "find": "transport === 'p2p' ? chunkBytes + 16",
+          "replace": "false ? chunkBytes + 16"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-grant",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "Fence diagnostic IO when the approved peer scope changes",
+      "edits": [
+        {
+          "find": "this.endpoint.valid()",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-busy",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "A new serial transaction interrupts diagnostic traffic",
+      "edits": [
+        {
+          "find": "this.endpoint.available()",
+          "replace": "true"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-byte-bound",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "Bound the total traffic of each diagnostic session",
+      "edits": [
+        {
+          "find": "this.traffic>144*1024",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-frame-bound",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "Reject oversized but otherwise valid diagnostic frames",
+      "edits": [
+        {
+          "find": "data.byteLength>CHUNK+12",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-message-bound",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "Bound tiny control messages independently of byte size",
+      "edits": [
+        {
+          "find": "++this.messages>96",
+          "replace": "++this.messages>9600"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-page-gate",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "One active diagnostic per page with a cooldown",
+      "edits": [
+        {
+          "find": "this.active||now()-this.last<30000",
+          "replace": "false"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-deadline",
+      "file": "static/js/p2p-network.js",
+      "suite": "frontend",
+      "description": "A blocked diagnostic sender must stop within its total time budget",
+      "edits": [
+        {
+          "find": "BACKLOG=8192,DEADLINE=20000;",
+          "replace": "BACKLOG=8192,DEADLINE=200000;"
+        }
+      ]
+    },
+    {
+      "id": "js-network-probe-serial-isolation",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Keep the diagnostic stream outside the serial channel handler",
+      "edits": [
+        {
+          "find": "if (!endpoint.accept(event.channel)) serialChannel(event);",
+          "replace": "serialChannel(event);"
+        }
+      ]
+    },
+    {
+      "id": "js-network-stale-widget-result",
+      "file": "static/js/network-reference.js",
+      "suite": "frontend",
+      "description": "Invalidate old results when the selected path or peer changes",
+      "edits": [
+        {
+          "find": "if(lastTarget&&(lastTarget.id!==selected||lastTarget.valid&&!lastTarget.valid()))",
+          "replace": "if(false)"
+        }
+      ]
+    },
+    {
+      "id": "js-network-delayed-receiver-ready",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "A confirmed initiator must not lose diagnostics while the approved receiver awaits its ready notification",
+      "edits": [
+        {
+          "find": "valid: () => this.active() && this.link === link && link.mode === 'p2p',",
+          "replace": "valid: () => this.active() && this.direct && this.link === link && link.mode === 'p2p',"
+        }
+      ]
+    },
+    {
+      "id": "js-failure-channel-error",
+      "file": "static/js/p2p-probe-link.js",
+      "suite": "frontend",
+      "description": "Native SCTP details must be captured without raw error text",
+      "edits": [
+        {
+          "find": "this.channelError=['sctp-failure','data-channel-failure','dtls-failure'].includes(error?.errorDetail)?error.errorDetail:'unavailable';",
+          "replace": "this.channelError='unavailable';"
+        }
+      ]
+    },
+    {
+      "id": "js-failure-before-probe-close",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Capture assessment context before fallback closes the diagnostic stream",
+      "edits": [
+        {
+          "find": "if (this.link && this.link.mode !== 'websocket') this.link.failureContextSnapshot = this.failureContext(applicationCause);",
+          "replace": "if (false) this.link.failureContextSnapshot = this.failureContext(applicationCause);"
+        }
+      ]
+    },
+    {
+      "id": "js-failure-report-round",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "A delayed failure report cannot be sent through a new negotiation round",
+      "edits": [
+        {
+          "find": "if(!this.active()||this.link!==link||this.attempt!==attempt||link.failureReported||!link.diagnostic.failureDetails)return;",
+          "replace": "if(!this.active()||link.failureReported||!link.diagnostic.failureDetails)return;"
+        }
+      ]
+    },
+    {
+      "id": "go-failure-context-validation",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Failure context rejects private strings and out-of-range numeric fields",
+      "edits": [
+        {
+          "find": "\tif !allowed(d.ApplicationCause, \"\", \"rx_send\", \"rx_queue\", \"tx_send\", \"tx_queue\", \"tx_wait\", \"serial_frame\", \"tx_integrity\", \"tx_dispatch\") ||\n\t\t!allowed(d.ChannelError, \"\", \"unavailable\", \"sctp-failure\", \"data-channel-failure\", \"dtls-failure\") ||\n\t\t!allowed(d.ChannelState, \"\", \"unavailable\", \"connecting\", \"open\", \"closing\", \"closed\") ||\n\t\td.SerialBufferedAmount < 0 || d.SerialBufferedAmount > 1048576 || d.AssessmentBufferedAmount < 0 || d.AssessmentBufferedAmount > 1048576 ||\n\t\td.SCTPCauseCode != nil && (d.ChannelError != \"sctp-failure\" || *d.SCTPCauseCode < 0 || *d.SCTPCauseCode > 65535) {",
+          "replace": "\tif false {"
+        }
+      ]
+    },
+    {
+      "id": "go-failure-report-log-bound",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Each socket can log only one failure snapshot per grant and round",
+      "edits": [
+        {
+          "find": "if remote.serialFailureLogged&reporter == 0 {",
+          "replace": "if true {"
+        }
+      ]
+    },
+    {
+      "id": "go-tx-relay-capability-bilateral",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Require both approved endpoints to negotiate TX-only relay",
+      "edits": [
+        {
+          "find": "if negotiatedSerialP2P(local, remote) == 1 && local.serialP2PTXRelayProtocol == 1 && remote.serialP2PTXRelayProtocol == 1 {",
+          "replace": "if true {"
+        }
+      ]
+    },
+    {
+      "id": "go-tx-relay-local-signal-owner",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Only the actual Local may switch its approved Remote to split routing",
+      "edits": [
+        {
+          "find": "if sender != local || negotiatedSerialP2PTXRelay(local, remote) != 1 || !remote.serialDirect || remote.serialFallback || remote.serialTXRelay ||",
+          "replace": "if false || negotiatedSerialP2PTXRelay(local, remote) != 1 || !remote.serialDirect || remote.serialFallback || remote.serialTXRelay ||"
+        }
+      ]
+    },
+    {
+      "id": "go-tx-relay-deny-direct-permit",
+      "file": "websocket/serial_p2p.go",
+      "suite": "go-hub",
+      "description": "Do not issue direct TX permits after this Remote switches to relay TX",
+      "edits": [
+        {
+          "find": "case remote.serialTXRelay:",
+          "replace": "case false:"
+        }
+      ]
+    },
+    {
+      "id": "js-tx-relay-preserve-rx",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Keep direct RX enabled when TX moves to WSS",
+      "edits": [
+        {
+          "find": "this.txViaRelay=true;",
+          "replace": "this.direct=false;this.txViaRelay=true;"
+        }
+      ]
+    },
+    {
+      "id": "js-tx-relay-cancel-ambiguous",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Fence in-flight direct writes and mark their result unknown without replay",
+      "edits": [
+        {
+          "find": ",'P2P_TX_RELAY'",
+          "replace": ""
+        }
+      ]
+    },
+    {
+      "id": "js-tx-relay-reset-on-full-fallback",
+      "file": "static/js/serial-p2p.js",
+      "suite": "frontend",
+      "description": "Clear the split-route indicator when direct RX also falls back",
+      "edits": [
+        {
+          "find": "this.direct = false; this.txViaRelay=false; this.generation++;",
+          "replace": "this.direct = false; this.generation++;"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-tx-relay-wss-route",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Route new TX over WSS while the P2P RX channel remains direct",
+      "edits": [
+        {
+          "find": "if (serialPeer?.direct && !serialPeer?.txViaRelay) {",
+          "replace": "if (serialPeer?.direct) {"
+        }
+      ]
+    },
+    {
+      "id": "js-local-auto-accept-default-off",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Keep automatic acceptance disabled without a saved explicit choice",
+      "edits": [
+        {
+          "find": "return globalThis.localStorage?.getItem(AUTO_ACCEPT_STORAGE_KEY) === 'true';",
+          "replace": "return true;"
+        }
+      ]
+    },
+    {
+      "id": "js-local-auto-accept-save",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Persist the Local user's automatic-accept choice in browser storage",
+      "edits": [
+        {
+          "find": "saveAutoAcceptPreference(autoAccept);",
+          "replace": "void autoAccept;"
+        }
+      ]
+    },
+    {
+      "id": "js-local-auto-accept-pause-clear",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Clear the saved auto-accept preference when Local pauses remote operations",
+      "edits": [
+        {
+          "find": "remoteWritesPaused = true;\n    autoAccept = false;\n    elements.autoAccept.checked = false;\n    saveAutoAcceptPreference(false);\n    writeStatePending =",
+          "replace": "remoteWritesPaused = true;\n    autoAccept = false;\n    elements.autoAccept.checked = false;\n    writeStatePending ="
+        }
+      ]
+    },
+    {
+      "id": "js-remote-reconnect-no-old-grant",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Reconnect with a fresh request that never carries the previous grant",
+      "edits": [
+        {
+          "find": "const request = { type: 'connect', localId, access: elements.accessSelect.value || 'read', version: 3, rxReplayProtocol: 1, flashProtocol: 1 };",
+          "replace": "const request = { type: 'connect', grantId, localId, access: elements.accessSelect.value || 'read', version: 3, rxReplayProtocol: 1, flashProtocol: 1 };"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-reconnect-preserve-pending-access",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Keep the requested access while auto-reconnect settings change during approval",
+      "edits": [
+        {
+          "find": "reconnectAccess = isConnected ? access : elements.accessSelect.value || reconnectAccess || 'read';",
+          "replace": "reconnectAccess = isConnected || isPending ? access : elements.accessSelect.value || 'read';"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-store-monitor-target",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Persist the selected Local ID and permission for monitor recovery",
+      "edits": [
+        {
+          "find": "autoReconnectWanted = autoReconnectEnabled;\n    saveRemoteConnectionPreference();\n    isPending = true;",
+          "replace": "autoReconnectWanted = autoReconnectEnabled;\n    isPending = true;"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-reconnect-on-socket-close",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Schedule bounded Remote reconnection after an unexpected WebSocket close",
+      "edits": [
+        {
+          "find": "} else if (shouldRetry) scheduleRemoteReconnect();",
+          "replace": "} else if (false) scheduleRemoteReconnect();"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-reconnect-when-local-offline",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Retry a saved monitoring request while Local is temporarily offline",
+      "edits": [
+        {
+          "find": "const retryableLocalState = ['local_not_found', 'local_disconnected'].includes(message.code);",
+          "replace": "const retryableLocalState = false;"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-reconnect-stop-after-denial",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Stop automatic requests after Local explicitly denies or times out approval",
+      "edits": [
+        {
+          "find": "if (resourceError || isPending && !retryableLocalState || ['connection_denied', 'approval_timeout', 'too_many_requests'].includes(message.code)) disableRemoteReconnect();",
+          "replace": "if (resourceError) disableRemoteReconnect();"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-manual-disconnect-stops-reconnect",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Do not reconnect after the user manually disconnects Remote",
+      "edits": [
+        {
+          "find": "function performRemoteDisconnect() {\n    disableRemoteReconnect();",
+          "replace": "function performRemoteDisconnect() {\n    autoReconnectWanted = true;"
+        }
+      ]
+    },
+    {
+      "id": "js-local-system-events-not-rendered",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Keep connection events out of the serial RX/TX terminal",
+      "edits": [
+        {
+          "find": "if (list === eventRecords) return;",
+          "replace": "if (false) return;"
+        }
+      ]
+    },
+    {
+      "id": "js-local-system-log-export-source",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Export Local system diagnostics separately from serial data",
+      "edits": [
+        {
+          "find": "const text = eventRecords.map(record => '[' + record.time + '] EVENT ' + record.text).join('\\n');",
+          "replace": "const text = dataRecords.map(record => '[' + record.time + '] EVENT ' + record.text).join('\\n');"
+        }
+      ]
+    },
+    {
+      "id": "js-local-clear-serial-keeps-system-events",
+      "file": "static/js/local.js",
+      "suite": "frontend",
+      "description": "Clearing serial history must leave exportable system events",
+      "edits": [
+        {
+          "find": "dataRecords.length = 0; retainedBytes = 0; pendingRecords.clear();",
+          "replace": "eventRecords.length = 0; dataRecords.length = 0; retainedBytes = 0; pendingRecords.clear();"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-system-events-separated",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Keep Remote connection diagnostics outside the serial record stream",
+      "edits": [
+        {
+          "find": "if (record.direction === 'EVENT') {",
+          "replace": "if (false) {"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-system-log-bound",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Bound the separate Remote system event buffer",
+      "edits": [
+        {
+          "find": "if (systemRecords.length > MAX_SYSTEM_RECORDS) systemRecords.shift();",
+          "replace": "if (false) systemRecords.shift();"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-clear-rx-keeps-system-events",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Clearing Remote RX history must leave exportable system events",
+      "edits": [
+        {
+          "find": "records = [];\n    rxDecoder = new TextDecoder();",
+          "replace": "records = []; systemRecords.length = 0;\n    rxDecoder = new TextDecoder();"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-tool-navigation-keeps-transport",
+      "file": "static/js/remote.js",
+      "suite": "frontend",
+      "description": "Switching Remote tools must preserve its WebSocket and grant",
+      "edits": [
+        {
+          "find": "elements.remoteWorkspace.dataset.activeTool = activeTool;",
+          "replace": "releaseTransport(); elements.remoteWorkspace.dataset.activeTool = activeTool;"
+        }
+      ]
+    },
+    {
+      "id": "js-remote-esp32-reuses-session",
+      "file": "static/js/esp32-flasher.js",
+      "suite": "frontend",
+      "description": "The ESP32 tool must adopt the existing Remote session",
+      "edits": [
+        {
+          "find": "const sharedRemote = globalThis.ShareSerialRemote || null;",
+          "replace": "const sharedRemote = null;"
+        }
+      ]
+    },
+    {
+      "id": "go-remote-esp32-shared-document",
+      "file": "main.go",
+      "suite": "go-server",
+      "description": "Both Remote tool routes must serve the shared app shell",
+      "edits": [
+        {
+          "find": "r.GET(\"/remote/esp32\", func(c *gin.Context) {\n\t\tserveAsset(c, \"remote.html\")\n\t})",
+          "replace": "r.GET(\"/remote/esp32\", func(c *gin.Context) {\n\t\tserveAsset(c, \"not-found.html\")\n\t})"
+        }
+      ]
+    }
+  ]
+}

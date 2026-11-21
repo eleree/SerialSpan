@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareSerial - 远程串口助手</title>
+    <link rel="stylesheet" href="/static/css/local.css">
+    <link rel="stylesheet" href="/static/css/remote.css">
+    <link rel="stylesheet" href="/static/css/network-reference.css">
+</head>
+<body>
+<main class="workspace remote-workspace" id="remoteWorkspace" data-active-tool="serial">
+    <header class="header">
+        <div class="brand"><a href="/">ShareSerial</a><span>/</span><h1 id="remotePageTitle">远程串口助手</h1></div>
+        <div class="status-group"><span class="ws-status"><span id="wsDot" class="status-dot disconnected"></span><span id="wsStatus">未连接服务器</span></span><label class="auto-reconnect" title="断线后重新连接并重新申请权限"><input id="autoReconnect" type="checkbox" checked> 断线自动重连</label></div>
+    </header>
+    <div id="errorMessage" class="notice error-message hidden" role="alert"></div>
+    <div id="successMessage" class="notice success-message hidden" role="status"></div>
+    <section class="device-toolbar remote-connect-toolbar" id="connectSection" aria-label="连接共享串口">
+        <div class="port-controls">
+            <label for="localIdInput">共享码</label><input type="text" id="localIdInput" placeholder="输入 5 位共享码" maxlength="5" autocomplete="off" spellcheck="false">
+            <select id="accessSelect" aria-label="申请权限"><option value="read" selected>只读</option><option value="control">完全控制</option></select>
+            <button id="connectBtn" class="button-primary">申请连接</button><button id="cancelConnectBtn" class="button-secondary hidden">取消申请</button>
+        </div>
+        <p id="approvalStatus" class="hidden" role="status"></p>
+    </section>
+    <section class="device-toolbar remote-connect-toolbar connected-topbar hidden" id="connectedTopInfo" aria-label="当前共享连接">
+        <span>共享码</span><strong id="connectedLocalId" class="share-code"></strong>
+        <span>权限</span><strong id="connectedAccess"></strong>
+        <button id="disconnectBtn" class="button-secondary">断开连接</button>
+    </section>
+    <div class="workspace-body">
+        <nav class="remote-tools-nav" aria-label="Remote 工具">
+            <a href="/remote" id="remoteSerialTab" data-remote-tool="serial" aria-current="page">远程串口</a>
+            <a href="/remote/esp32" id="remoteFlashTab" data-remote-tool="esp32">ESP32 烧录</a>
+        </nav>
+        <section class="terminal-panel" id="remoteSerialPanel" data-remote-panel="serial" aria-label="远程串口工作区">
+            <div class="terminal-toolbar"><h2>串口收发</h2><div class="terminal-actions">
+                <button id="hexModeBtn" class="button-quiet">HEX 显示</button><button id="clearRxBtn" class="button-quiet">清空</button><button id="exportBtn" class="button-quiet">导出 RX</button><button id="exportSystemLogBtn" class="button-quiet">导出系统日志</button>
+            </div></div>
+            <div class="terminal" id="rxData" role="log" aria-label="串口收发日志" aria-live="off"></div>
+            <div class="terminal-status"><span>RX <strong id="rxCount">0 B</strong></span><span title="成功提交的字节，不代表设备执行确认">TX <strong id="txCount">0 B</strong></span><button id="clearCountsBtn" class="button-quiet">清零计数</button><span>最多保留 2000 条收发记录</span></div>
+            <section class="composer" aria-label="远程发送">
+                <div class="composer-heading"><h2>发送数据</h2><button id="clearTxBtn" class="button-quiet">清空输入</button></div>
+                <div class="send-row"><input type="text" id="sendInput" placeholder="输入要发送的文本或 HEX 字节" autocomplete="off" aria-label="发送内容"><button id="sendBtn" class="button-primary" disabled>发送</button></div>
+                <div class="send-options"><label><input type="checkbox" id="hexSend"> HEX 发送</label><label><input type="checkbox" id="sendCR"> 追加回车 (CR)</label></div>
+                <div class="send-options periodic-controls"><label for="periodicInterval">间隔 <input id="periodicInterval" type="number" min="20" max="86400000" step="1" value="1000"> ms</label><button id="periodicSendBtn" class="button-secondary" disabled>定时发送</button><span id="periodicStatus" role="status">未开启</span></div>
+                <div class="preset-commands" aria-label="快捷指令"><span>快捷指令</span><button data-cmd="AT">AT</button><button data-cmd="AT+GMR">AT+GMR</button><button data-cmd="AT+CIFSR">AT+CIFSR</button></div>
+            </section>
+        </section>
+        <aside class="sidebar" aria-label="远程连接信息">
+            <section class="sidebar-section" aria-label="串口参数"><h2>串口参数</h2>
+                <p id="configCurrent" class="config-current"></p>
+                <div class="serial-parameters">
+                    <label>波特率<select id="baudRate" disabled><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option selected>115200</option><option>230400</option><option>460800</option><option>921600</option></select></label>
+                    <label>数据位<select id="dataBits" disabled><option>7</option><option selected>8</option></select></label>
+                    <label>停止位<select id="stopBits" disabled><option selected>1</option><option>2</option></select></label>
+                    <label>校验<select id="parity" disabled><option value="none">无</option><option value="odd">奇校验</option><option value="even">偶校验</option></select></label>
+                    <label>流控<select id="flowControl" disabled><option value="none">无</option><option value="hardware">RTS/CTS</option></select></label>
+                </div>
+                <button id="applyConfigBtn" class="button-secondary" disabled>应用参数</button><p id="configStatus" role="status">连接后查看当前参数</p>
+            </section>
+            <section class="sidebar-section network-reference" aria-label="共享网络参考">
+                <div class="network-heading"><strong>共享网络参考</strong><button id="networkEvaluateBtn">评估网络</button></div>
+                <p id="networkSummary" role="status">尚未评估</p><div id="networkMetrics"></div>
+                <details><summary>参考值说明</summary><p>已直连时测本页与 Local 的双向数据通道；其他情况测本页与服务器下行和 HTTP 往返。不写入串口，不自动修改参数。</p><p>直连按需采样 128 KiB 有效载荷，最多 20 秒，每页同一时间仅一项，30 秒后可重测；串口事务、补传或定时发送期间暂不评估。服务器评估最多下载 320 KiB，最长约 50 秒。按 8N1、64 B 分块及 50% 余量给出参考，不代表设备验收；直连结果不包含控制/补传性能。探测超时率不是 IP 丢包率，路径变化后需重新评估。</p></details>
+            </section>
+        </aside>
+        <section class="terminal-panel esp32-panel hidden" id="esp32Panel" data-remote-panel="esp32" aria-label="ESP32 串口烧录工具">
+            <div class="terminal-toolbar">
+                <h2>ESP32 烧录</h2>
+                <span id="esp32HeaderStatus" class="fdt-transport">未连接共享串口</span>
+            </div>
+            <div class="esp32-content">
+                <fieldset class="fdt-group fdt-paths">
+                    <legend>固件与写入地址</legend>
+                    <div class="fdt-file-toolbar">
+                        <button id="esp32BatchFilesBtn" class="button-secondary" disabled>批量选择 BIN</button>
+                        <button id="esp32VerifyBtn" class="button-secondary" disabled>校验固件</button>
+                        <span id="esp32FirmwareHelp">逐行选择 BIN 并填写地址。</span>
+                    </div>
+                    <input id="esp32ImageFiles" class="hidden" aria-label="批量选择二进制文件" type="file" accept=".bin,application/octet-stream" multiple disabled>
+                    <div id="esp32Layout" class="flash-layout hidden">
+                        <table><thead><tr><th scope="col">烧录</th><th scope="col">BIN 文件</th><th scope="col">地址（HEX）</th></tr></thead><tbody id="esp32ImageRows"></tbody></table>
+                    </div>
+                    <p id="esp32ManifestStatus" class="inline-status" role="status">获批控制并检测芯片后可校验固件。</p>
+                    <details class="fdt-summary"><summary>固件摘要 / SHA-256</summary><pre id="esp32ManifestSummary" class="manifest-summary hidden"></pre></details>
+                </fieldset>
+                <div class="fdt-config-row">
+                    <fieldset class="fdt-group">
+                        <legend>烧录参数</legend>
+                        <div class="flash-settings">
+                            <label class="file-field">SPI 频率<select id="esp32FlashFreq" disabled><option value="40m">40 MHz</option><option value="80m">80 MHz</option><option value="20m">20 MHz</option></select></label>
+                            <label class="file-field">SPI 模式<select id="esp32FlashMode" disabled><option value="dio">DIO</option><option value="qio">QIO</option><option value="dout">DOUT</option><option value="qout">QOUT</option></select></label>
+                        </div>
+                    </fieldset>
+                    <fieldset class="fdt-group fdt-detected">
+                        <legend>设备信息 <span id="esp32ChipBadge" class="chip-badge">未检测</span></legend>
+                        <dl id="esp32DeviceInfo" class="device-info hidden">
+                            <div><dt>芯片</dt><dd id="esp32ChipName"></dd></div>
+                            <div><dt>Flash</dt><dd id="esp32FlashSize"></dd></div>
+                            <div><dt>串口</dt><dd id="esp32PortName">等待连接</dd></div>
+                        </dl>
+                        <div class="flash-actions"><button id="esp32ConnectBtn" class="button-primary" disabled>连接并检测</button><button id="esp32DisconnectBtn" class="button-secondary" disabled>释放串口</button><span>波特率 115200</span></div>
+                    </fieldset>
+                </div>
+                <fieldset class="fdt-group fdt-download">
+                    <legend>烧录与日志</legend>
+                    <label class="flash-confirm"><input id="esp32ConfirmFlash" type="checkbox" disabled> 已核对芯片、固件和写入地址，确认烧录。</label>
+                    <div class="fdt-download-controls">
+                        <div class="fdt-run-state"><strong id="esp32RunStatus">待连接</strong><span id="esp32State" role="status">尚未连接</span></div>
+                        <div class="fdt-download-buttons"><button id="esp32FlashBtn" class="button-primary" disabled>开始烧录</button><button id="esp32StopBtn" class="button-secondary" disabled title="停止烧录并断开当前 Remote 授权连接">停止</button></div>
+                        <div class="flash-progress"><progress id="esp32Progress" max="100" value="0"></progress><span id="esp32ProgressText">0%</span></div>
+                    </div>
+                    <div class="fdt-log-heading"><span>烧录日志</span><button id="esp32ClearLogBtn" class="button-quiet">清空</button></div>
+                    <pre id="esp32Log" class="flash-log" role="log" aria-live="off"></pre>
+                    <p class="fdt-footnote">停止会断开当前远端连接。SHA-256 是文件摘要，不证明固件发布者身份。</p>
+                </fieldset>
+            </div>
+        </section>
+    </div>
+</main>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/serial-data.js"></script>
+<script src="/static/js/serial-tools.js"></script>
+<script src="/static/js/serial-config.js"></script>
+<script src="/static/js/esp32-manifest.js"></script>
+<script src="/static/js/network-reference.js"></script>
+<script src="/api/serial-p2p-config.js"></script>
+<script src="/static/js/p2p-probe-link.js"></script>
+<script src="/static/js/p2p-network.js"></script>
+<script src="/static/js/serial-p2p.js"></script>
+<script src="/static/js/remote.js"></script>
+<script type="module" src="/static/js/esp32-flasher.js"></script>
+</body>
+</html>

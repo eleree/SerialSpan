@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ShareSerial P2P 实验</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#f5f7f8;color:#17212e;font:15px system-ui,sans-serif}main{max-width:1050px;margin:24px auto;padding:0 16px}h1{font-size:24px}section{background:white;border:1px solid #dde3e7;border-radius:6px;padding:18px;margin:16px 0}button,input,select{font:inherit;border-radius:6px;padding:9px 12px;border:1px solid #ccd5da}button{background:#12776e;color:white;cursor:pointer}button:disabled{opacity:.45;cursor:default}label{display:inline-flex;gap:8px;align-items:center;margin:5px}p{line-height:1.65}.notice{background:#fff6d9;padding:12px;border-radius:6px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.peer{padding:10px;border-bottom:1px solid #e6eaed;display:flex;gap:10px;align-items:center;flex-wrap:wrap}code{font-size:20px;font-weight:700}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#17212e;color:#dce8ed;padding:14px;max-height:290px;overflow:auto;border-radius:6px}small{color:#526471}.hidden{display:none}
+  </style>
+</head>
+<body><main>
+  <h1>P2P 合成数据实验</h1>
+  <p class="notice">实验分支：只测试合成二进制数据，不选择、不读写物理串口，也不烧录固件。直连采用浏览器原生 WebRTC；未配置公网 STUN/TURN。本页测试不能证明公网穿透成功率。</p>
+  <section><div class="row">
+    <label>角色 <select id="role"><option value="local">Local（批准连接）</option><option value="remote">Remote（申请连接）</option></select></label>
+    <label id="idLabel">共享码 <input id="code" maxlength="5" size="7" placeholder="5 位共享码"></label>
+    <label id="accessLabel">申请权限 <select id="access"><option value="read">只读</option><option value="control">完全控制（合成测试）</option></select></label>
+    <button id="connect">开启实验</button><button id="disconnect" disabled>断开</button>
+  </div><p>状态：<span id="status">尚未连接</span>　共享码：<code id="shareCode">—</code></p>
+  <div id="pending"></div></section>
+  <section><h2>已批准的实验端</h2><div id="peers">暂无</div>
+    <div class="row"><label>目标 <select id="target"></select></label><label>测试大小 <select id="size"><option value="65536">64 KiB</option><option value="262144" selected>256 KiB</option><option value="1048576">1 MiB</option><option value="4194304">4 MiB</option></select></label>
+    <button id="send" disabled>发送并核对 SHA-256</button><button id="fallback" disabled>关闭直连，改用中继</button><button id="pause" disabled>暂停 Remote 合成发送</button></div>
+    <p><small>只读 Remote 可接收 Local 测试数据；发送需完全控制。切换或断线会中止当前测试，旧数据不会自动重发，需重新开始新的测试。</small></p>
+  </section>
+  <section><h2>测试结果</h2><pre id="results">尚未测试</pre><h2>事件</h2><pre id="log"></pre></section>
+  <script src="/static/js/i18n.js"></script><script src="/static/js/serial-data.js"></script><script src="/static/js/p2p-probe-link.js"></script><script src="/static/js/p2p-probe.js"></script>
+</main></body></html>

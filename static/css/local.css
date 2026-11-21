@@ -1,0 +1,88 @@
+:root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; color: #203044; background: #edf1f5; font-size: 14px; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, select, input { font: inherit; }
+button, select, input[type="text"], summary { border: 1px solid #d5dde5; border-radius: 6px; min-height: 34px; padding: 6px 11px; background: #fff; color: inherit; }
+button, summary { cursor: pointer; }
+button:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+button:hover:not(:disabled), summary:hover { background: #f0f5f8; }
+button:focus-visible, select:focus-visible, input:focus-visible, summary:focus-visible, a:focus-visible { outline: 2px solid #168378; outline-offset: 2px; }
+.button-primary { color: #fff; background: #12776e; border-color: #12776e; }
+.button-primary:hover:not(:disabled) { background: #0d625b; }
+.button-danger { color: #ae3434; border-color: #e4c0c0; background: #fff8f8; }
+.button-secondary { background: #f8fafc; }
+.button-quiet { background: transparent; padding: 5px 9px; }
+.workspace { height: 100vh; height: 100dvh; min-height: 620px; padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; max-width: 1920px; margin: auto; }
+.header, .brand, .status-group, .ws-status, .port-controls, .sharing-toolbar, .terminal-actions, .composer-heading, .control-status, .send-options, .terminal-status { display: flex; align-items: center; gap: 12px; }
+.header { justify-content: space-between; min-height: 34px; flex-shrink: 0; }
+.brand a { color: #12776e; font-size: 17px; font-weight: 700; text-decoration: none; }
+.brand > span { color: #b1bcc7; }
+h1 { margin: 0; font-size: 16px; font-weight: 600; }
+h2 { font-size: 14px; font-weight: 650; margin: 0; }
+.status-group, .ws-status { font-size: 12px; gap: 8px; color: #5b6c7e; }
+.status-label { padding: 5px 9px; background: #e3e9ef; border-radius: 5px; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: #95a4b2; }
+.status-dot.connected { background: #188477; }
+.device-toolbar { padding: 12px; border: 1px solid #dae2e9; border-radius: 9px; background: #fff; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; flex-shrink: 0; }
+.port-controls { flex-wrap: wrap; gap: 8px; }
+.port-controls > label, .send-options > label { display: flex; gap: 7px; align-items: center; }
+#portSelect { width: 190px; max-width: 100%; }
+.parameters { position: relative; }
+.parameters summary { list-style: none; }
+.parameters summary::after { content: " ▾"; }
+.parameter-fields { position: absolute; z-index: 3; top: 42px; left: 0; width: 280px; background: #fff; border: 1px solid #dae2e9; border-radius: 8px; padding: 14px; box-shadow: 0 8px 24px #20304420; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.parameter-fields label { display: grid; gap: 5px; font-size: 12px; }
+.parameter-fields select { min-width: 0; width: 100%; }
+.sharing-toolbar { flex-wrap: wrap; gap: 8px; font-size: 12px; }
+.share-code { font-family: Consolas, monospace; font-size: 17px; letter-spacing: 1px; color: #116c64; background: #edf7f4; border-radius: 5px; min-width: 88px; text-align: center; padding: 6px 9px; }
+.workspace-body { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 14px; flex: 1; min-height: 0; }
+.terminal-panel { background: #fff; border: 1px solid #dae2e9; border-radius: 9px; overflow: hidden; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.terminal-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; flex-shrink: 0; flex-wrap: wrap; }
+.terminal-actions { gap: 6px; flex-wrap: wrap; }
+.terminal-actions button, .terminal-actions select { font-size: 12px; min-height: 29px; }
+.terminal { flex: 1; min-height: 160px; background: #17212e; color: #d8e3ed; padding: 12px 14px; overflow: auto; scrollbar-color: #536478 #17212e; font: 12px/1.7 Consolas, "Microsoft YaHei", monospace; }
+.terminal-row { display: flex; align-items: baseline; gap: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.terminal-time { color: #8da1b5; white-space: nowrap; flex-shrink: 0; }
+.terminal-label { min-width: 32px; flex-shrink: 0; color: #7caabf; }
+.terminal-row.RX .terminal-label { color: #72d1bd; }
+.terminal-row.TX .terminal-label { color: #efc785; }
+.terminal-content { min-width: 0; }
+.terminal-status { padding: 7px 14px; background: #f7f9fb; border-bottom: 1px solid #e4e9ef; font-size: 11px; color: #667689; flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
+.terminal-status strong { font-weight: 500; color: #364b60; }
+.terminal-status .button-quiet { min-height: 22px; padding: 2px 6px; font-size: 11px; }
+.periodic-controls input[type="number"] { width: 108px; min-height: 28px; padding: 3px 7px; border: 1px solid #d7e0e8; border-radius: 5px; background: #fff; color: #25364a; font-family: inherit; font-size: 12px; }
+.periodic-controls label { display: inline-flex; align-items: center; gap: 5px; }
+.periodic-controls button { min-height: 28px; padding: 3px 9px; font-size: 12px; }
+.periodic-controls [role="status"] { color: #63758a; }
+#historyStatus { margin-left: auto; }
+.composer { padding: 12px 14px; display: grid; gap: 9px; flex-shrink: 0; }
+.composer-heading { justify-content: space-between; }
+.control-status { gap: 8px; color: #63758a; font-size: 12px; }
+.control-status button { min-height: 28px; padding: 4px 8px; font-size: 12px; }
+.send-row { display: flex; gap: 10px; }
+.send-row input { flex: 1; min-width: 0; font-family: Consolas, "Microsoft YaHei", monospace; }
+.send-row button { min-width: 76px; }
+.send-options { font-size: 12px; flex-wrap: wrap; gap: 14px; }
+.send-options select { min-height: 26px; padding: 2px 7px; font-size: 12px; }
+input[type="checkbox"] { accent-color: #12776e; }
+#writeStatus { margin-left: auto; color: #748396; }
+.sidebar { border: 1px solid #dae2e9; border-radius: 9px; background: #fff; overflow: auto; min-height: 0; }
+.sidebar-section { padding: 16px; border-bottom: 1px solid #e8edf2; }
+.sidebar-section:last-child { border-bottom: 0; }
+.sidebar-section p { color: #627386; line-height: 1.6; font-size: 12px; margin: 10px 0; }
+.auto-accept { display: flex; gap: 6px; align-items: center; margin-top: 14px; font-size: 13px; }
+.sidebar-section .help-text { color: #8591a0; font-size: 11px; }
+.count { font-size: 11px; border-radius: 4px; background: #eef2f6; padding: 2px 6px; color: #667689; margin-left: 5px; }
+.remote-list { list-style: none; padding: 0; margin: 12px 0 0; }
+.remote-item { border: 1px solid #e2e8ee; border-radius: 6px; padding: 10px; margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.remote-item > span { flex-basis: 100%; font-size: 12px; overflow-wrap: anywhere; line-height: 1.6; }
+.remote-item button { min-height: 28px; padding: 4px 7px; font-size: 11px; }
+.btn-success { color: #116c64; border-color: #bedbd5; background: #f0faf7; }
+.btn-danger { color: #ac4040; border-color: #e4c5c5; }
+.empty-state { font-size: 12px; color: #8a98a7; padding: 5px 0; }
+.notice { padding: 9px 12px; border-radius: 6px; font-size: 12px; flex-shrink: 0; }
+.error-message { background: #fcebea; color: #9d3030; }
+.success-message { background: #e6f5ef; color: #256b54; }
+.hidden { display: none !important; }
+@media (max-width: 1050px) { .workspace { padding: 12px; } .workspace-body { grid-template-columns: minmax(0,1fr) 255px; gap: 10px; } .device-toolbar { gap: 8px; } #historyStatus { display: none; } }
+@media (max-width: 760px) { .workspace { height: auto; min-height: 100vh; padding: 10px; } .header { align-items: flex-start; flex-wrap: wrap; gap: 8px; } .brand { gap: 7px; } h1 { font-size: 14px; } .workspace-body { grid-template-columns: 1fr; } .terminal-panel { min-height: 560px; } .terminal { min-height: 280px; max-height: 65vh; } .terminal-toolbar { align-items: flex-start; padding: 10px; } .terminal-actions { gap: 4px; } .terminal-actions button { padding: 4px 6px; } .device-toolbar { padding: 10px; } #portSelect { flex: 1; width: 150px; } .sharing-toolbar { width: 100%; border-top: 1px solid #e8edf2; padding-top: 9px; } .composer { padding: 10px; } .composer-heading { flex-wrap: wrap; gap: 6px; } .terminal-row { gap: 7px; } .terminal-time { font-size: 10px; } .sidebar { overflow: visible; } #writeStatus { margin-left: 0; flex-basis: 100%; } }

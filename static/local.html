@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareSerial - 本地串口助手</title>
+    <link rel="stylesheet" href="/static/css/local.css">
+    <link rel="stylesheet" href="/static/css/network-reference.css">
+</head>
+<body>
+<main class="workspace">
+    <header class="header">
+        <div class="brand"><a href="/">ShareSerial</a><span>/</span><h1>本地串口助手</h1></div>
+        <div class="status-group"><span id="portState" class="status-label">串口未打开</span><span class="ws-status"><span id="wsDot" class="status-dot disconnected"></span><span id="wsStatus">未共享</span></span></div>
+    </header>
+    <div id="errorMessage" class="notice error-message hidden" role="alert"></div>
+    <div id="successMessage" class="notice success-message hidden" role="status"></div>
+    <section class="device-toolbar" aria-label="串口设置">
+        <div class="port-controls">
+            <button id="refreshBtn" class="button-secondary">选择串口</button>
+            <select id="portSelect" aria-label="串口设备" disabled><option value="">尚未选择设备</option></select>
+            <label>波特率 <select id="baudRate"><option>9600</option><option>19200</option><option>38400</option><option>57600</option><option selected>115200</option><option>230400</option><option>460800</option><option>921600</option></select></label>
+            <details class="parameters"><summary>更多参数</summary><div class="parameter-fields">
+                <label>数据位<select id="dataBits"><option>7</option><option selected>8</option></select></label>
+                <label>停止位<select id="stopBits"><option selected>1</option><option>2</option></select></label>
+                <label>校验<select id="parity"><option value="none">无</option><option value="odd">奇校验</option><option value="even">偶校验</option></select></label>
+                <label>流控<select id="flowControl"><option value="none">无</option><option value="hardware">RTS/CTS</option></select></label>
+            </div></details>
+            <button id="openPortBtn" class="button-primary">打开串口</button><button id="closePortBtn" class="button-danger hidden">关闭串口</button>
+        </div>
+        <div class="sharing-toolbar"><button id="shareBtn" class="button-secondary" disabled>开启共享</button><span>共享码</span><strong id="localId" class="share-code">未共享</strong><button id="copyBtn" class="button-quiet" disabled>复制</button></div>
+    </section>
+    <div class="workspace-body">
+        <section class="terminal-panel" aria-label="串口工作区">
+            <div class="terminal-toolbar"><h2>串口收发</h2><div class="terminal-actions">
+                <select id="logFilter" aria-label="日志筛选"><option value="all">收发</option><option value="RX">接收 RX</option><option value="TX">发送 TX</option></select>
+                <button id="hexModeBtn" class="button-quiet">HEX 显示</button><button id="pauseLogBtn" class="button-quiet">暂停滚动</button><button id="clearLogBtn" class="button-quiet">清空</button><button id="exportLogBtn" class="button-quiet">导出收发</button><button id="exportSystemLogBtn" class="button-quiet">导出系统日志</button>
+            </div></div>
+            <div class="terminal" id="logArea" role="log" aria-label="串口收发日志" aria-live="off"><div id="logContent"></div></div>
+            <div class="terminal-status"><span>RX <strong id="rxCount">0 B</strong></span><span>TX <strong id="txCount">0 B</strong></span><button id="clearCountsBtn" class="button-quiet">清零计数</button><span>最后活动 <strong id="lastActivity">—</strong></span><span id="historyStatus">串口数据最多 2000 条 / 2 MiB</span></div>
+            <section class="composer" aria-label="本机发送">
+                <div class="composer-heading"><h2>本机发送</h2><div class="control-status"><span id="controlOwner">本机可发送</span><button id="takeControlBtn" class="button-secondary" disabled>暂停远端操作</button></div></div>
+                <div class="send-row"><input id="sendInput" type="text" placeholder="输入要发送的文本或 HEX 字节" autocomplete="off" aria-label="发送内容"><button id="sendBtn" class="button-primary" disabled>发送</button></div>
+                <div class="send-options"><label><input id="hexSend" type="checkbox"> HEX 发送</label><label>行尾<select id="lineEnding"><option value="none">无</option><option value="cr">CR</option><option value="lf">LF</option><option value="crlf">CRLF</option></select></label><span id="writeStatus">本机收发无需开启远程共享</span></div>
+                <div class="send-options periodic-controls"><label for="periodicInterval">间隔 <input id="periodicInterval" type="number" min="20" max="86400000" step="1" value="1000"> ms</label><button id="periodicSendBtn" class="button-secondary" disabled>定时发送</button><span id="periodicStatus" role="status">未开启</span></div>
+            </section>
+        </section>
+        <aside class="sidebar" aria-label="远程连接管理">
+            <section class="sidebar-section"><h2>远程共享</h2><p id="sharingState">打开串口后可开启共享，本机调试始终可用。</p><label class="auto-accept"><input id="autoAccept" type="checkbox" disabled> 自动接受申请</label><p class="help-text">默认关闭。设置保存在此浏览器，开启共享后生效；完全控制端可发送和修改参数。暂停远端操作或撤销控制端会关闭此项。</p></section>
+            <section class="sidebar-section"><h2>待批准的连接 <span id="pendingCount" class="count">0</span></h2><ul id="pendingList" class="remote-list"><li class="empty-state">暂无申请</li></ul></section>
+            <section class="sidebar-section"><h2>已授权的远程端 <span id="remoteCount" class="count">0</span></h2><ul id="remoteList" class="remote-list"><li class="empty-state">暂无远程连接</li></ul></section>
+            <section class="sidebar-section network-reference" aria-label="共享网络参考">
+                <div class="network-heading"><strong>共享网络参考</strong><button id="networkEvaluateBtn">评估网络</button></div>
+                <label id="networkTargetLabel" class="hidden">评估对象 <select id="networkTarget" aria-label="评估远端"></select></label>
+                <p id="networkSummary" role="status">尚未评估</p><div id="networkMetrics"></div>
+                <details><summary>参考值说明</summary><p>按当前对象自动选链路：已直连时测 Local 与对应 Remote，其他情况测本页与服务器。多个远端可选择评估对象，不写入串口，不自动修改波特率。</p><p>直连按需双向采样 128 KiB 有效载荷，最多 20 秒，每页同一时间仅一项，30 秒后可重测；串口事务、补传或定时发送期间暂不评估。服务器评估最多下载 320 KiB，最长约 50 秒，只反映服务器到本页下行和 HTTP 往返。探测超时率不是 IP 丢包率。参考波特率按 8N1、64 B 分块及 50% 余量估算；直连结果不包含服务器控制/补传性能，也不代表设备验收。</p></details>
+            </section>
+        </aside>
+    </div>
+</main>
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/serial-data.js"></script>
+<script src="/static/js/serial-tools.js"></script>
+<script src="/static/js/serial-config.js"></script>
+<script src="/static/js/rx-replay.js"></script>
+<script src="/static/js/network-reference.js"></script>
+<script src="/api/serial-p2p-config.js"></script>
+<script src="/static/js/p2p-probe-link.js"></script>
+<script src="/static/js/p2p-network.js"></script>
+<script src="/static/js/serial-p2p.js"></script>
+<script src="/static/js/local.js"></script>
+<script src="/static/js/local-config.js"></script>
+</body>
+</html>

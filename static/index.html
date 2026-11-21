@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareSerial - 远程串口访问</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .role-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .role-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 32px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .role-card:hover {
+            border-color: #667eea;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .role-card.local:hover {
+            border-color: #48bb78;
+            box-shadow: 0 8px 24px rgba(72, 187, 120, 0.2);
+        }
+
+        .role-card.remote:hover {
+            border-color: #ed8936;
+            box-shadow: 0 8px 24px rgba(237, 137, 54, 0.2);
+        }
+
+        .role-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .role-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .role-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .features {
+            margin-top: 40px;
+            text-align: left;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .features h3 {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .features ul {
+            list-style: none;
+        }
+
+        .features li {
+            padding: 8px 0;
+            color: #555;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li::before {
+            content: "✓";
+            color: #48bb78;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .warning {
+            margin-top: 24px;
+            padding: 12px;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ShareSerial</h1>
+        <p class="subtitle">通过浏览器访问远程串口</p>
+
+        <div class="role-cards">
+            <a href="/local" class="role-card local">
+                <div class="role-icon">🖥️</div>
+                <div class="role-title">本地端 (Local)</div>
+                <div class="role-desc">共享本机串口，让远程设备访问</div>
+            </a>
+            <a href="/remote" class="role-card remote">
+                <div class="role-icon">📡</div>
+                <div class="role-title">远程端 (Remote)</div>
+                <div class="role-desc">通过ID连接远端串口设备</div>
+            </a>
+        </div>
+
+        <div class="features">
+            <h3>功能特性</h3>
+            <ul>
+                <li>Web Serial API 直连本机串口</li>
+                <li>无需安装软件，浏览器即可使用</li>
+                <li>支持多设备同时访问</li>
+                <li>HEX/文本模式自由切换</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            ⚠️ 请使用 Chrome/Edge 等支持 Web Serial API 的浏览器
+        </div>
+    </div>
+    <script src="/static/js/i18n.js"></script>
+</body>
+</html>

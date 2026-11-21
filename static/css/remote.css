@@ -1,0 +1,119 @@
+.remote-connect-toolbar { align-items: center; position: sticky; top: 8px; z-index: 8; box-shadow: 0 5px 16px #20304412; }
+.remote-workspace { width: 100%; }
+.connected-topbar { justify-content: flex-start; }
+.connected-topbar > span { color: #627386; font-size: 12px; }
+.connected-topbar > button { margin-left: auto; }
+.remote-workspace .workspace-body { grid-template-columns: 148px minmax(0, 1fr) 290px; }
+.remote-tools-nav { position: sticky; top: 8px; align-self: start; display: grid; gap: 6px; padding: 8px; border: 1px solid #dae2e9; border-radius: 9px; background: #fff; }
+.remote-tools-nav a { display: block; border-radius: 6px; padding: 10px 11px; color: #516579; text-decoration: none; font-size: 13px; }
+.remote-tools-nav a:hover { background: #f0f5f8; }
+.remote-tools-nav a[aria-current="page"] { color: #116c64; background: #edf7f4; font-weight: 650; }
+.remote-connect-toolbar #localIdInput { width: 170px; min-width: 0; font-family: Consolas, monospace; letter-spacing: 1px; }
+.remote-connect-toolbar #accessSelect { min-width: 108px; }
+.remote-workspace .status-group .auto-reconnect { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 12px; color: #536579; }
+#approvalStatus { margin: 0; font-size: 12px; color: #627386; line-height: 1.6; overflow-wrap: anywhere; }
+.remote-workspace .terminal-label { min-width: 88px; }
+.remote-workspace .composer-heading > button { min-height: 28px; padding: 4px 8px; font-size: 12px; }
+.preset-commands { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; font-size: 12px; }
+.preset-commands > span { color: #748396; margin-right: 3px; }
+.preset-commands button { min-height: 27px; padding: 3px 9px; font-size: 11px; }
+.connection-details { margin: 14px 0; display: grid; gap: 14px; }
+.connection-details > div { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 10px; align-items: center; }
+.connection-details dt { color: #627386; font-size: 12px; }
+.connection-details dd { margin: 0; min-width: 0; font-size: 12px; overflow-wrap: anywhere; }
+.connection-details .share-code { display: inline-block; }
+.connection-empty { display: none; }
+.serial-parameters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.serial-parameters label { display: grid; gap: 5px; min-width: 0; font-size: 12px; color: #627386; }
+.serial-parameters label:first-child { grid-column: 1 / -1; }
+.serial-parameters select { min-width: 0; width: 100%; }
+.config-current:empty { display: none; }
+#connectedInfo.hidden + .connection-empty { display: block; }
+/* ESP32 uses the same controls, surfaces and terminal colors as Local/Remote. */
+.esp32-workspace .workspace-body { grid-template-columns: 148px minmax(0, 1fr); }
+.esp32-panel { overflow: hidden; }
+.esp32-panel .terminal-toolbar { border-bottom: 1px solid #e4e9ef; }
+.fdt-transport { color: #627386; font-size: 12px; }
+.esp32-content { min-height: 0; padding: 12px; overflow: auto; display: grid; grid-template-columns: minmax(0, 1fr) 248px; align-content: start; gap: 12px; }
+.fdt-group { min-width: 0; margin: 0; padding: 10px 12px 12px; border: 1px solid #dae2e9; border-radius: 8px; background: #fff; }
+.fdt-group legend { padding: 0 5px; color: #516579; font-size: 12px; font-weight: 650; }
+.fdt-group p { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: #627386; }
+.fdt-paths { grid-column: 1; }
+.fdt-file-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 10px; }
+.fdt-file-toolbar > button { min-height: 29px; padding: 4px 9px; font-size: 12px; }
+.fdt-file-toolbar > span { color: #748396; font-size: 11px; }
+.file-field { display: grid; gap: 5px; min-width: 0; color: #627386; font-size: 12px; }
+.file-field select { width: 100%; min-width: 0; }
+.flash-layout { min-width: 0; overflow-x: auto; border: 1px solid #dae2e9; border-radius: 6px; }
+.flash-layout table { width: 100%; min-width: 360px; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 12px; }
+.flash-layout th { padding: 7px 6px; background: #f5f7f9; color: #627386; font-weight: 500; }
+.flash-layout td { padding: 3px 5px; border-top: 1px solid #eef2f5; }
+.flash-layout th:first-child, .flash-layout td:first-child { width: 42px; text-align: center; }
+.flash-layout th:last-child, .flash-layout td:last-child { width: 134px; }
+.flash-layout input[type="text"] { width: 100%; min-width: 0; min-height: 28px; height: 28px; padding: 3px 7px; font: 12px Consolas, monospace; }
+.fdt-file-picker { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.fdt-file-picker > input[type="text"] { flex: 1; }
+.fdt-file-picker > button { min-width: 28px; min-height: 28px; height: 28px; padding: 0 5px; font-weight: 600; background: #f8fafc; }
+.fdt-file-picker .fdt-loaded-file { background: #f3faf7; color: #335e55; }
+.inline-status { min-height: 18px; }
+.fdt-summary { margin-top: 7px; font-size: 12px; }
+.fdt-summary summary { border: 0; background: transparent; padding: 0; min-height: 18px; font-size: 12px; color: #627386; }
+.manifest-summary { max-height: 150px; margin: 6px 0 0; padding: 9px; overflow: auto; border-radius: 6px; background: #f5f7f9; white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.5 Consolas, monospace; }
+.fdt-config-row { grid-column: 2; grid-row: 1; display: grid; grid-template-columns: 1fr; align-content: start; gap: 12px; }
+.flash-settings { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chip-badge { color: #748396; margin-left: 5px; font-size: 10px; font-weight: 400; }
+.device-info { margin: 0 0 12px; display: grid; gap: 10px; }
+.device-info > div { min-width: 0; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 7px; align-items: baseline; }
+.device-info dt { color: #748396; font-size: 12px; }
+.device-info dd { margin: 0; overflow-wrap: anywhere; color: #354b60; font-size: 12px; }
+.flash-actions { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.flash-actions > button { min-height: 29px; padding: 4px 8px; font-size: 12px; }
+.flash-actions > span { flex-basis: 100%; color: #748396; font-size: 11px; }
+.fdt-download { grid-column: 1 / -1; }
+.flash-confirm { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; color: #52677b; font-size: 12px; }
+.flash-confirm input { margin: 0; }
+.fdt-download-controls { display: flex; align-items: center; gap: 10px; }
+.fdt-run-state { align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: 3px; width: 132px; flex-shrink: 0; min-height: 48px; padding: 6px 9px; text-align: center; border-radius: 6px; background: #edf7f4; border: 1px solid #c7e1d9; color: #116c64; }
+.fdt-run-state strong { font-size: 15px; font-weight: 600; }
+.fdt-run-state > span { font-size: 11px; overflow-wrap: anywhere; }
+.fdt-download-buttons { display: flex; gap: 7px; }
+.fdt-download-buttons > button { min-height: 34px; min-width: 76px; font-size: 12px; }
+.flash-progress { display: flex; align-items: center; gap: 7px; flex: 1; min-width: 80px; }
+.flash-progress progress { width: 100%; min-width: 0; height: 12px; accent-color: #12776e; }
+.flash-progress > span { color: #627386; font: 12px Consolas, monospace; }
+.fdt-log-heading { display: flex; align-items: center; justify-content: space-between; margin: 10px 0 5px; color: #627386; font-size: 12px; }
+.fdt-log-heading > button { min-height: 26px; padding: 3px 8px; font-size: 11px; }
+.flash-log { min-height: 96px; max-height: 180px; margin: 0; padding: 10px; overflow: auto; border-radius: 6px; background: #17212e; color: #d8e3ed; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px/1.5 Consolas, monospace; }
+.fdt-group .fdt-footnote { margin-top: 7px; font-size: 11px; color: #748396; }
+@media (max-width: 760px) {
+    .remote-workspace .workspace-body, .esp32-workspace .workspace-body { grid-template-columns: 1fr; }
+    .remote-tools-nav { position: sticky; top: 86px; z-index: 7; display: flex; overflow-x: auto; }
+    .remote-tools-nav a { white-space: nowrap; }
+    .remote-connect-toolbar .port-controls { width: 100%; }
+    .remote-connect-toolbar #localIdInput { flex: 1; width: 120px; }
+    .connected-topbar { gap: 7px; }
+    .connected-topbar .share-code { min-width: 72px; font-size: 14px; }
+    .connected-topbar > button { margin-left: 0; }
+    .remote-workspace .terminal-label { min-width: 80px; }
+    .esp32-content { grid-template-columns: minmax(0, 1fr); }
+    .fdt-config-row { grid-column: 1; grid-row: auto; grid-template-columns: 1fr 1fr; }
+    .fdt-file-toolbar > span { flex-basis: 100%; }
+    .fdt-download-controls { flex-wrap: wrap; }
+    .fdt-run-state { width: 112px; }
+    .flash-progress { flex-basis: 100%; }
+    .esp32-content { padding: 10px; }
+    .fdt-config-row { grid-template-columns: 1fr; }
+}
+@media (min-width: 761px) and (max-width: 1050px) {
+    .remote-workspace .workspace-body { grid-template-columns: 120px minmax(0, 1fr) 255px; }
+    .esp32-workspace .workspace-body { grid-template-columns: 120px minmax(0, 1fr); }
+}
+
+@media (min-width: 761px) and (max-width: 1100px) {
+    .esp32-content { grid-template-columns: minmax(0, 1fr); }
+    .fdt-config-row { grid-column: 1; grid-row: auto; grid-template-columns: 1fr 1fr; }
+}
+
+#remoteWorkspace[data-active-tool="esp32"] .workspace-body { grid-template-columns: 148px minmax(0, 1fr); }
+#remoteWorkspace[data-active-tool="esp32"] #remoteSerialPanel,
+#remoteWorkspace[data-active-tool="esp32"] .sidebar { display: none; }
