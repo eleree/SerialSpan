@@ -5,7 +5,7 @@ Maintainers: refresh with go run ./cmd/package -sync-notices after dependency ch
 --- licenses/LICENSE ---
 MIT License
 
-Copyright (c) 2026 ShareSerial contributors
+Copyright (c) 2026 Nikola Eleree
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
