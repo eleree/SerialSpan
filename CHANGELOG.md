@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0-beta.2-p2p.1 — SerialSpan GitHub preview (2026-11-22)
+
 ### Persistent monitoring reconnect
 
 - Reconnect Remote after an unexpected socket or Local outage with 3/6/12/24/30-second backoff. Persist the last Local code, requested access and reconnect preference in the Remote browser; each reconnect submits a fresh authorization request and never reuses a grant. Manual disconnect, denial, approval timeout and resource-limit closure stop retries.

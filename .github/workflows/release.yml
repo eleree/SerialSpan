@@ -61,12 +61,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > release-notes.txt <<'NOTES'
-          Portable preview packages for trusted, self-hosted networks.
+          SerialSpan is the GitHub project name for the ShareSerial application. These are beta preview packages for self-hosted use on trusted LAN/VPN networks. The five-character share code identifies a session; it is not authentication. Do not expose the service directly to untrusted public networks.
           Windows: download the matching EXE and double-click it. No ZIP, runtime helper or startup script is required. First run configures the LAN address, unique HTTPS certificate and optional private-network firewall rule.
           Other Local computers must explicitly trust the public server certificate. Never distribute its private key.
-          Windows data is stored under LOCALAPPDATA/ShareSerial; -licenses displays embedded notices. Other platforms include README.txt in their archives. Verify SHA256SUMS.txt. These binaries are not code-signed/notarized. ESP32 hardware and recovery acceptance remains as documented in docs/ESP32_FLASHING.md.
+          WebRTC direct connections are opportunistic and may fall back to the server relay; cross-network direct connectivity is not guaranteed. Remote ESP32 flashing is experimental: ESP32-C3 and interrupted-write recovery remain unverified. Windows data is stored under LOCALAPPDATA/ShareSerial; -licenses displays embedded notices. Other platforms include README.txt in their archives. Verify SHA256SUMS.txt. These binaries are not code-signed/notarized. See docs/ESP32_FLASHING.md for the hardware acceptance scope.
           Review the release criteria in ROADMAP.md before publishing this draft.
           NOTES
           gh release create "$GITHUB_REF_NAME" dist/"$RELEASE_VERSION"/* \
             --repo "$GITHUB_REPOSITORY" --verify-tag --draft --prerelease \
-            --title "ShareSerial $RELEASE_VERSION" --notes-file release-notes.txt
+            --title "SerialSpan $RELEASE_VERSION" --notes-file release-notes.txt
