@@ -48,6 +48,8 @@ async function launch(){
             const {sessionId}=await command('Target.attachToTarget',{targetId,flatten:true});
             for(const method of ['Page.enable','Runtime.enable','Network.enable'])await command(method,{},sessionId);
             await command('Security.setIgnoreCertificateErrors',{ignore:true},sessionId);
+            await command('Emulation.setLocaleOverride',{locale:'zh-CN'},sessionId);
+            await command('Network.setUserAgentOverride',{userAgent:await evaluate(sessionId,'navigator.userAgent'),acceptLanguage:'zh-CN,zh'},sessionId);
             if(source)await command('Page.addScriptToEvaluateOnNewDocument',{source},sessionId);
             await command('Page.navigate',{url},sessionId);await wait(sessionId,"document.readyState==='complete'",loadTimeoutMs);return sessionId;
         }

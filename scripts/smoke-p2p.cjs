@@ -45,6 +45,8 @@ function summarizeRates(values){
         const {sessionId}=await command('Target.attachToTarget',{targetId,flatten:true});
         await command('Page.enable',{},sessionId);await command('Runtime.enable',{},sessionId);await command('Network.enable',{},sessionId);
         await command('Security.setIgnoreCertificateErrors',{ignore:true},sessionId);
+        await command('Emulation.setLocaleOverride',{locale:'zh-CN'},sessionId);
+        await command('Network.setUserAgentOverride',{userAgent:await evaluate(sessionId,'navigator.userAgent'),acceptLanguage:'zh-CN,zh'},sessionId);
         // Record native channels for deliberate malformed/unauthorized frame tests.
         await command('Page.addScriptToEvaluateOnNewDocument',{source:`window.__probeChannels=[];window.__probeSockets=[];const NativeWS=window.WebSocket;window.WebSocket=class extends NativeWS{constructor(...args){super(...args);__probeSockets.push(this)}};const NativeRTC=window.RTCPeerConnection;window.RTCPeerConnection=class extends NativeRTC{createDataChannel(...args){const channel=super.createDataChannel(...args);__probeChannels.push(channel);return channel}};`},sessionId);
         await command('Page.navigate',{url:origin+'/experimental/p2p?role='+role},sessionId);
