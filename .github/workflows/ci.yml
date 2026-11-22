@@ -84,7 +84,19 @@ jobs:
           go run ./cmd/devcert -out .local/p2p-ci-certs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+          function Wait-ForP2PTestServer([System.Diagnostics.Process]$Process) {
+            for ($attempt = 0; $attempt -lt 20; $attempt++) {
+              if ($Process.HasExited) { throw "P2P test server exited before readiness (code $($Process.ExitCode))." }
+              try {
+                $response = Invoke-WebRequest -Uri 'https://127.0.0.1:12559/local' -SkipCertificateCheck -TimeoutSec 2
+                if ($response.StatusCode -eq 200) { return }
+              } catch {}
+              Start-Sleep -Milliseconds 250
+            }
+            throw 'P2P test server did not become HTTPS-ready within the startup budget.'
+          }
           try {
+            Wait-ForP2PTestServer $server
             node scripts/smoke-p2p.cjs https://127.0.0.1:12559 .local/p2p-ci-report.json
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             node scripts/smoke-serial-p2p.cjs https://127.0.0.1:12559 .local/serial-p2p-ci-report.json --screenshots
@@ -94,10 +106,12 @@ jobs:
             # Give this independent smoke test a fresh HTTP sampling budget.
             if (!$server.HasExited) { Stop-Process -Id $server.Id; $server.WaitForExit() }
             $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+            Wait-ForP2PTestServer $server
             node scripts/smoke-network-reference.cjs https://127.0.0.1:12559 .local/network-reference-ci-report.json --screenshots
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
             if (!$server.HasExited) { Stop-Process -Id $server.Id; $server.WaitForExit() }
             $server = Start-Process -FilePath .local/p2p-ci-server.exe -ArgumentList '-addr 127.0.0.1:12559 -cert .local/p2p-ci-certs/cert.pem -key .local/p2p-ci-certs/key.pem' -PassThru -WindowStyle Hidden
+            Wait-ForP2PTestServer $server
             node scripts/smoke-p2p-failure.cjs https://127.0.0.1:12559 .local/p2p-failure-ci-report.json
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           } finally {
