@@ -18,7 +18,7 @@
 
 Local 需要支持 Web Serial 的桌面 Chromium 浏览器和可信 HTTPS。该项目不要求设备更换固件；Remote ESP32 烧录为实验功能。已验证行为与限制见下方。
 
-GitHub 发布页：<https://github.com/eleree/SerialSpan/releases>（首次公开发布尚待完成）。
+GitHub Beta 发布页：<https://github.com/eleree/SerialSpan/releases>。试用时欢迎通过 [Beta 反馈表单](https://github.com/eleree/SerialSpan/issues/new?template=beta_feedback.yml) 分享环境和实际结果；请勿公开串口内容、共享码或证书信息。
 
 ## 功能与边界
 

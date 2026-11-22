@@ -18,7 +18,7 @@ Run the Windows single-file build on the computer attached to the device, or sta
 
 Local requires a desktop Chromium browser with Web Serial support and trusted HTTPS. The device does not need custom firmware. Remote ESP32 flashing is experimental; verified behavior and limits are listed below.
 
-GitHub releases: <https://github.com/eleree/SerialSpan/releases> (the first public release is pending).
+GitHub beta release: <https://github.com/eleree/SerialSpan/releases>. If you try it, share your setup and results through the [beta feedback form](https://github.com/eleree/SerialSpan/issues/new?template=beta_feedback.yml). Do not post serial contents, share codes, or certificate details.
 
 ## Capabilities and limits
 
